@@ -4,6 +4,7 @@
 import {
   validateLocation, loadSettings, saveSettings, mapMode, MAX_ADDITIONAL_LOCATIONS,
 } from './settings.js';
+import { lookupPlace } from './geocode.js';
 
 function populateTimeZoneOptions(datalist) {
   if (typeof Intl.supportedValuesOf !== 'function') return;
@@ -51,6 +52,58 @@ function fillForm(form, settings) {
   form.elements['map-mode'].value = mapMode(settings);
 }
 
+// A Find button searches the row's Label text and offers the matches;
+// picking one fills the row. Requests happen only here, on demand —
+// the display itself never talks to the geocoder.
+function initLookup(form) {
+  for (const find of form.querySelectorAll('.location-find')) {
+    const prefix = find.dataset.prefix;
+    const results = form.querySelector(`.lookup-results[data-prefix="${prefix}"]`);
+
+    find.addEventListener('click', async () => {
+      const query = form.elements[`${prefix}-label`].value.trim();
+      if (query === '') {
+        results.textContent = 'Type a place name in Label first.';
+        form.elements[`${prefix}-label`].focus();
+        return;
+      }
+      find.disabled = true;
+      results.textContent = 'Searching…';
+      try {
+        const candidates = await lookupPlace(query);
+        results.replaceChildren();
+        if (candidates.length === 0) {
+          results.textContent = 'No places found.';
+          return;
+        }
+        for (const candidate of candidates) {
+          const pick = document.createElement('button');
+          pick.type = 'button';
+          pick.className = 'lookup-candidate';
+          pick.textContent = candidate.description
+            ? `${candidate.label} — ${candidate.description}`
+            : candidate.label;
+          pick.addEventListener('click', () => {
+            fillLocation(form, prefix, candidate);
+            results.replaceChildren();
+          });
+          results.append(pick);
+        }
+      } catch {
+        results.textContent = 'Lookup failed — try again, or enter coordinates manually.';
+      } finally {
+        find.disabled = false;
+      }
+    });
+  }
+}
+
+function clearLookupResults(form) {
+  for (const results of form.querySelectorAll('.lookup-results')) {
+    results.replaceChildren();
+  }
+}
+
 export function initSettingsUi({ storage, onChange }) {
   const button = document.getElementById('settings-button');
   const dialog = document.getElementById('settings-dialog');
@@ -61,9 +114,12 @@ export function initSettingsUi({ storage, onChange }) {
 
   button.addEventListener('click', () => {
     fillForm(form, loadSettings(storage));
+    clearLookupResults(form);
     error.hidden = true;
     dialog.showModal();
   });
+
+  initLookup(form);
 
   document.getElementById('settings-cancel').addEventListener('click', () => {
     dialog.close();

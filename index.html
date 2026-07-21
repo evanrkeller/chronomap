@@ -34,7 +34,7 @@
       <h2 id="settings-title">Settings</h2>
       <section class="settings-section">
         <h3>Home location</h3>
-        <div class="settings-fields">
+        <div class="settings-fields location-row">
           <label>Label
             <input name="home-label" type="text" placeholder="Home" autocomplete="off">
           </label>
@@ -47,7 +47,10 @@
           <label>Time zone
             <input name="home-tz" type="text" list="tz-options" placeholder="America/Chicago" autocomplete="off">
           </label>
+          <button type="button" class="location-find" data-prefix="home"
+                  aria-label="Find coordinates for this location">Find</button>
         </div>
+        <div class="lookup-results" data-prefix="home" aria-live="polite"></div>
       </section>
       <section class="settings-section settings-locations">
         <h3>Additional locations</h3>
@@ -57,29 +60,41 @@
           <label>Latitude <input name="loc-0-lat" type="text" autocomplete="off"></label>
           <label>Longitude <input name="loc-0-lon" type="text" autocomplete="off"></label>
           <label>Time zone <input name="loc-0-tz" type="text" list="tz-options" autocomplete="off"></label>
+          <button type="button" class="location-find" data-prefix="loc-0"
+                  aria-label="Find coordinates for this location">Find</button>
           <button type="button" class="location-clear" data-row="0" aria-label="Clear location 1">✕</button>
         </div>
+        <div class="lookup-results" data-prefix="loc-0" aria-live="polite"></div>
         <div class="settings-fields location-row">
           <label>Label <input name="loc-1-label" type="text" autocomplete="off"></label>
           <label>Latitude <input name="loc-1-lat" type="text" autocomplete="off"></label>
           <label>Longitude <input name="loc-1-lon" type="text" autocomplete="off"></label>
           <label>Time zone <input name="loc-1-tz" type="text" list="tz-options" autocomplete="off"></label>
+          <button type="button" class="location-find" data-prefix="loc-1"
+                  aria-label="Find coordinates for this location">Find</button>
           <button type="button" class="location-clear" data-row="1" aria-label="Clear location 2">✕</button>
         </div>
+        <div class="lookup-results" data-prefix="loc-1" aria-live="polite"></div>
         <div class="settings-fields location-row">
           <label>Label <input name="loc-2-label" type="text" autocomplete="off"></label>
           <label>Latitude <input name="loc-2-lat" type="text" autocomplete="off"></label>
           <label>Longitude <input name="loc-2-lon" type="text" autocomplete="off"></label>
           <label>Time zone <input name="loc-2-tz" type="text" list="tz-options" autocomplete="off"></label>
+          <button type="button" class="location-find" data-prefix="loc-2"
+                  aria-label="Find coordinates for this location">Find</button>
           <button type="button" class="location-clear" data-row="2" aria-label="Clear location 3">✕</button>
         </div>
+        <div class="lookup-results" data-prefix="loc-2" aria-live="polite"></div>
         <div class="settings-fields location-row">
           <label>Label <input name="loc-3-label" type="text" autocomplete="off"></label>
           <label>Latitude <input name="loc-3-lat" type="text" autocomplete="off"></label>
           <label>Longitude <input name="loc-3-lon" type="text" autocomplete="off"></label>
           <label>Time zone <input name="loc-3-tz" type="text" list="tz-options" autocomplete="off"></label>
+          <button type="button" class="location-find" data-prefix="loc-3"
+                  aria-label="Find coordinates for this location">Find</button>
           <button type="button" class="location-clear" data-row="3" aria-label="Clear location 4">✕</button>
         </div>
+        <div class="lookup-results" data-prefix="loc-3" aria-live="polite"></div>
       </section>
       <fieldset class="settings-section settings-mode">
         <legend>Map centering</legend>

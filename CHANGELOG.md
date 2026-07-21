@@ -24,6 +24,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Keller Solutions attribution badge in the bottom-left corner — the
   RampScope logo mark plus a copyright line whose year updates itself
   (#29)
+- Find button on every location row: searches the label text against
+  the free, keyless Open-Meteo geocoder and fills latitude, longitude,
+  and timezone from the picked match — requests happen only when the
+  user searches, so the display stays fully static (#33)
 
 ### Changed
 
