@@ -36,6 +36,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- A brand-new visitor now sees only two scoreboard tiles — home and
+  UTC. Home is their detected location, or Birmingham, AL when
+  detection is denied or unavailable; the old pre-populated city set
+  (Brisbane, Leeds, Cincinnati, Istanbul, New Delhi) is gone, and
+  extra cities appear only when added in settings (#37)
 - Map centering moved from asset time to render time: the projection
   takes a center meridian and the pre-rolled imagery is drawn with a
   wrapped offset, so any longitude can sit mid-screen (#26)
