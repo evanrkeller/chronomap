@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Initial city set is now Brisbane, Leeds (home), Cincinnati, Istanbul,
+  and New Delhi, plus a UTC card; scoreboard cards order themselves
+  west→east to match marker positions on the map (#19)
+
 - City markers are now plain outlined dots — no text labels (#18)
 - Day imagery gets brighter, more saturated blues so daylit ocean reads
   clearly against the night side from across a room (#17)

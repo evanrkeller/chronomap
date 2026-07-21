@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CENTER_LONGITUDE, lonToX, latToY, xToLon, yToLat } from '../js/geo.js';
+import { CENTER_LONGITUDE, lonToX, latToY, xToLon, yToLat, mapOrder } from '../js/geo.js';
 
 const WIDTH = 2048;
 const HEIGHT = 1024;
@@ -48,6 +48,13 @@ test('yToLat inverts latToY to within a pixel', () => {
     const roundTripped = yToLat(latToY(latitude, HEIGHT), HEIGHT);
     assert.ok(Math.abs(roundTripped - latitude) < 180 / HEIGHT);
   }
+});
+
+test('mapOrder sorts cities west to east as drawn on the map', () => {
+  // Brisbane, Leeds, Cincinnati, Greenwich (UTC), Istanbul, India.
+  const longitudes = [153.0251, -86.5497, -84.512, 0, 28.9784, 77.59];
+  const sorted = [...longitudes].sort((a, b) => mapOrder(a) - mapOrder(b));
+  assert.deepEqual(sorted, longitudes);
 });
 
 test('London is right of center and in the northern half', () => {

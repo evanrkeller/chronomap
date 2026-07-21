@@ -1,4 +1,4 @@
-import { xToLon, yToLat } from './geo.js';
+import { xToLon, yToLat, mapOrder } from './geo.js';
 import { subsolarPoint, sinAltitude } from './solar.js';
 import { nightAlpha } from './terminator.js';
 import { drawMarkers } from './markers.js';
@@ -40,8 +40,7 @@ function loadImage(src) {
   });
 }
 
-function renderMask(date) {
-  const subsolar = subsolarPoint(date);
+function renderMask(subsolar) {
   const data = maskPixels.data;
   let offset = 0;
   for (let y = 0; y < MASK_HEIGHT; y += 1) {
@@ -59,7 +58,8 @@ function render(dayImage, nightImage) {
   const now = new Date();
   // Breadcrumb for remote debugging on the kiosk (chrome://inspect).
   console.log(`chronomap redraw ${now.toISOString()}`);
-  renderMask(now);
+  const subsolar = subsolarPoint(now);
+  renderMask(subsolar);
 
   // Night imagery, masked down to where the sun is below the horizon.
   nightContext.globalCompositeOperation = 'source-over';
@@ -81,9 +81,17 @@ function scheduleUpdates(dayImage, nightImage) {
 
 function buildScoreboard(cities) {
   const scoreboard = document.getElementById('scoreboard');
-  const tiles = cities.map((city, index) => {
+  const home = cities.find((city) => city.home) ?? cities[0];
+
+  // Cards run west→east in the same order the markers appear on the
+  // map; UTC (no coordinates) slots in at the Greenwich meridian.
+  const ordered = [...cities].sort(
+    (a, b) => mapOrder(a.lon ?? 0) - mapOrder(b.lon ?? 0),
+  );
+
+  const tiles = ordered.map((city) => {
     const tile = document.createElement('div');
-    tile.className = index === 0 ? 'city-tile home' : 'city-tile';
+    tile.className = city === home ? 'city-tile home' : 'city-tile';
 
     const name = document.createElement('div');
     name.className = 'city-name';
@@ -100,11 +108,9 @@ function buildScoreboard(cities) {
     return { city, tile, time, weekday };
   });
 
-  const homeTimezone = cities[0].tz;
-
   function updateClocks() {
     const now = new Date();
-    const homeDate = localDateKey(now, homeTimezone);
+    const homeDate = localDateKey(now, home.tz);
     for (const { city, tile, time, weekday } of tiles) {
       const formatted = formatCityTime(now, city.tz);
       time.textContent = formatted.time;

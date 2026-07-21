@@ -12,6 +12,12 @@ export function lonToX(longitude, mapWidth) {
   return (lonFromLeftEdge(longitude) / 360) * mapWidth;
 }
 
+// Sort key for laying scoreboard cards out west→east in the same order
+// their markers appear on the recentered map.
+export function mapOrder(longitude) {
+  return lonFromLeftEdge(longitude);
+}
+
 export function latToY(latitude, mapHeight) {
   return ((90 - latitude) / 180) * mapHeight;
 }
