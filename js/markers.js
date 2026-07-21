@@ -1,17 +1,15 @@
 import { lonToX, latToY } from './geo.js';
 
-const DOT_RADIUS = 7;
-const LABEL_FONT = '600 26px system-ui, sans-serif';
-const LABEL_GAP = 14;
+const DOT_RADIUS = 8;
 
-// Draws city dots and labels once onto the overlay canvas. Labels sit to
-// the right of the dot unless that would run off the map edge.
+// Draws an unlabeled dot for each city that has coordinates (entries
+// like UTC are scoreboard-only). Outlined so it reads over both bright
+// daylight and dark ocean.
 export function drawMarkers(context, cities, mapWidth, mapHeight) {
   context.clearRect(0, 0, mapWidth, mapHeight);
-  context.font = LABEL_FONT;
-  context.textBaseline = 'middle';
 
   for (const city of cities) {
+    if (typeof city.lat !== 'number' || typeof city.lon !== 'number') continue;
     const x = lonToX(city.lon, mapWidth);
     const y = latToY(city.lat, mapHeight);
 
@@ -22,16 +20,5 @@ export function drawMarkers(context, cities, mapWidth, mapHeight) {
     context.lineWidth = 3;
     context.strokeStyle = 'rgba(0, 0, 0, 0.85)';
     context.stroke();
-
-    const labelWidth = context.measureText(city.name).width;
-    const fitsRight = x + LABEL_GAP + labelWidth < mapWidth - 8;
-    const labelX = fitsRight ? x + LABEL_GAP : x - LABEL_GAP - labelWidth;
-
-    // Readable over both bright daylight and dark ocean.
-    context.lineWidth = 5;
-    context.strokeStyle = 'rgba(0, 0, 0, 0.85)';
-    context.strokeText(city.name, labelX, y);
-    context.fillStyle = '#ffffff';
-    context.fillText(city.name, labelX, y);
   }
 }

@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- City markers are now plain outlined dots — no text labels (#18)
 - Day imagery gets brighter, more saturated blues so daylit ocean reads
   clearly against the night side from across a room (#17)
 
