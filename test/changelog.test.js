@@ -21,7 +21,7 @@ test('an Unreleased section exists for accumulating work', () => {
   assert.match(changelog, /^## \[Unreleased\]/m);
 });
 
-test('comparison links cover Unreleased and the latest release', () => {
+test('link definitions exist for Unreleased and the latest release', () => {
   assert.match(changelog, /^\[Unreleased\]: .+\/compare\/v\d/m);
   assert.ok(changelog.includes(`[${firstVersion}]: `), 'latest release link missing');
 });
