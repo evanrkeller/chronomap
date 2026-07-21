@@ -42,13 +42,13 @@ for (const name of ['moon-full.png', 'moon-new.png']) {
 for (const name of ['earth-day.jpg', 'earth-night.jpg']) {
   const path = new URL(`../assets/${name}`, import.meta.url).pathname;
 
-  test(`${name} is a 2048x1024 JPEG`, () => {
+  test(`${name} is a 4096x2048 JPEG`, () => {
     const { width, height } = jpegDimensions(path);
-    assert.equal(width, 2048);
-    assert.equal(height, 1024);
+    assert.equal(width, 4096);
+    assert.equal(height, 2048);
   });
 
-  test(`${name} is at most 1 MB`, () => {
-    assert.ok(statSync(path).size <= 1024 * 1024, `${name} exceeds 1 MB`);
+  test(`${name} is at most 1.5 MB`, () => {
+    assert.ok(statSync(path).size <= 1.5 * 1024 * 1024, `${name} exceeds 1.5 MB`);
   });
 }

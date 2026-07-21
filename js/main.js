@@ -8,32 +8,82 @@ import { scheduleDailyReload } from './kiosk.js';
 
 const UPDATE_INTERVAL_MS = 60000;
 
-// The night mask is computed at reduced resolution and scaled up with
-// smoothing — cheap on a Pi 3, and the interpolation softens the
-// terminator edge for free.
-const MASK_WIDTH = 512;
-const MASK_HEIGHT = 256;
+// The committed assets are 4096x2048 — no point rendering beyond them.
+const MAX_CANVAS_WIDTH = 4096;
 
+// Draw sizes in CSS pixels, multiplied by canvasScale at draw time so
+// they look identical at 1080p, 4K, and retina.
+const SUN_RADIUS = 15;
+const SUN_GLOW_RADIUS = 45;
+const MOON_RADIUS = 15;
+const MARKER_RADIUS = 8;
+
+// Medium grey-blue: visible over the night imagery, not distracting.
+const TWILIGHT_LINE_STYLE = 'rgba(125, 143, 174, 0.55)';
+
+const mapStack = document.getElementById('map-stack');
 const mapCanvas = document.getElementById('map');
 const mapContext = mapCanvas.getContext('2d');
-
-const maskCanvas = document.createElement('canvas');
-maskCanvas.width = MASK_WIDTH;
-maskCanvas.height = MASK_HEIGHT;
-const maskContext = maskCanvas.getContext('2d');
-const maskPixels = maskContext.createImageData(MASK_WIDTH, MASK_HEIGHT);
+const markersCanvas = document.getElementById('markers');
+const markersContext = markersCanvas.getContext('2d');
 
 const nightCanvas = document.createElement('canvas');
 const nightContext = nightCanvas.getContext('2d');
 
 // Loaded in start() before the first render.
-const moonImages = { full: null, new: null };
+const images = { day: null, night: null, moonFull: null, moonNew: null };
+let cities = [];
 
-// Longitude/latitude of every mask column/row, precomputed once.
-const maskLongitudes = new Float64Array(MASK_WIDTH);
-for (let x = 0; x < MASK_WIDTH; x += 1) maskLongitudes[x] = xToLon(x, MASK_WIDTH);
-const maskLatitudes = new Float64Array(MASK_HEIGHT);
-for (let y = 0; y < MASK_HEIGHT; y += 1) maskLatitudes[y] = yToLat(y, MASK_HEIGHT);
+// Canvas pixels per CSS pixel for the current layout.
+let canvasScale = 1;
+
+// The night mask is computed at reduced resolution and scaled up with
+// smoothing — cheap on a Pi 3, and the interpolation softens the
+// terminator edge for free. Rebuilt whenever the canvas is resized.
+let mask = null;
+
+function buildMask(canvasWidth) {
+  const width = Math.min(1024, Math.max(480, Math.round(canvasWidth / 8) * 2));
+  const height = width / 2;
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext('2d');
+
+  const longitudes = new Float64Array(width);
+  for (let x = 0; x < width; x += 1) longitudes[x] = xToLon(x, width);
+  const latitudes = new Float64Array(height);
+  for (let y = 0; y < height; y += 1) latitudes[y] = yToLat(y, height);
+
+  mask = {
+    canvas,
+    context,
+    pixels: context.createImageData(width, height),
+    longitudes,
+    latitudes,
+    width,
+    height,
+  };
+}
+
+// Sizes the canvas backing stores to the on-screen size times
+// devicePixelRatio (capped at the asset resolution), so a 4K TV gets a
+// native-resolution render while the Pi's 1080p canvas stays small.
+function layout() {
+  const cssWidth = mapStack.getBoundingClientRect().width;
+  if (cssWidth === 0) return false;
+  const devicePixels = window.devicePixelRatio || 1;
+  const width = Math.min(MAX_CANVAS_WIDTH, Math.round((cssWidth * devicePixels) / 2) * 2);
+  if (width === mapCanvas.width) return false;
+
+  for (const canvas of [mapCanvas, markersCanvas, nightCanvas]) {
+    canvas.width = width;
+    canvas.height = width / 2;
+  }
+  canvasScale = width / cssWidth;
+  buildMask(width);
+  return true;
+}
 
 function loadImage(src) {
   return new Promise((resolve, reject) => {
@@ -45,21 +95,18 @@ function loadImage(src) {
 }
 
 function renderMask(subsolar) {
-  const data = maskPixels.data;
+  const data = mask.pixels.data;
   let offset = 0;
-  for (let y = 0; y < MASK_HEIGHT; y += 1) {
-    const latitude = maskLatitudes[y];
-    for (let x = 0; x < MASK_WIDTH; x += 1) {
-      const sinAlt = sinAltitude(latitude, maskLongitudes[x], subsolar);
+  for (let y = 0; y < mask.height; y += 1) {
+    const latitude = mask.latitudes[y];
+    for (let x = 0; x < mask.width; x += 1) {
+      const sinAlt = sinAltitude(latitude, mask.longitudes[x], subsolar);
       data[offset + 3] = nightAlpha(sinAlt) * 255;
       offset += 4;
     }
   }
-  maskContext.putImageData(maskPixels, 0, 0);
+  mask.context.putImageData(mask.pixels, 0, 0);
 }
-
-// Medium grey-blue: visible over the night imagery, not distracting.
-const TWILIGHT_LINE_STYLE = 'rgba(125, 143, 174, 0.55)';
 
 function drawTwilightLine(subsolar) {
   const width = mapCanvas.width;
@@ -79,30 +126,28 @@ function drawTwilightLine(subsolar) {
     previousX = x;
   }
   mapContext.strokeStyle = TWILIGHT_LINE_STYLE;
-  mapContext.lineWidth = 2.5;
+  mapContext.lineWidth = 2.5 * canvasScale;
   mapContext.stroke();
 }
 
-const SUN_CORE_RADIUS = 11;
-const SUN_GLOW_RADIUS = 34;
-const MOON_RADIUS = 12;
-
 // Sun icon at the subsolar point: a soft glow with a bright core.
 function drawSunIcon(x, y) {
-  const glow = mapContext.createRadialGradient(x, y, 0, x, y, SUN_GLOW_RADIUS);
+  const coreRadius = SUN_RADIUS * canvasScale;
+  const glowRadius = SUN_GLOW_RADIUS * canvasScale;
+  const glow = mapContext.createRadialGradient(x, y, 0, x, y, glowRadius);
   glow.addColorStop(0, 'rgba(255, 236, 160, 0.9)');
   glow.addColorStop(0.4, 'rgba(255, 215, 94, 0.35)');
   glow.addColorStop(1, 'rgba(255, 215, 94, 0)');
   mapContext.fillStyle = glow;
   mapContext.beginPath();
-  mapContext.arc(x, y, SUN_GLOW_RADIUS, 0, Math.PI * 2);
+  mapContext.arc(x, y, glowRadius, 0, Math.PI * 2);
   mapContext.fill();
 
   mapContext.beginPath();
-  mapContext.arc(x, y, SUN_CORE_RADIUS, 0, Math.PI * 2);
+  mapContext.arc(x, y, coreRadius, 0, Math.PI * 2);
   mapContext.fillStyle = '#fff3c4';
   mapContext.fill();
-  mapContext.lineWidth = 2;
+  mapContext.lineWidth = 2 * canvasScale;
   mapContext.strokeStyle = 'rgba(214, 158, 32, 0.9)';
   mapContext.stroke();
 }
@@ -127,26 +172,26 @@ function tracePhasePath(x, y, radius, phase) {
 // Moon icon at the sublunar point: a darkened new-moon photo as the
 // base with the full-moon photo revealed across the lit region — the
 // same composite the earth itself gets.
-function drawMoonIcon(x, y, phase, moonFullImage, moonNewImage) {
-  const radius = MOON_RADIUS;
+function drawMoonIcon(x, y, phase) {
+  const radius = MOON_RADIUS * canvasScale;
   const size = radius * 2;
 
-  mapContext.drawImage(moonNewImage, x - radius, y - radius, size, size);
+  mapContext.drawImage(images.moonNew, x - radius, y - radius, size, size);
 
   mapContext.save();
   tracePhasePath(x, y, radius, phase);
   mapContext.clip();
-  mapContext.drawImage(moonFullImage, x - radius, y - radius, size, size);
+  mapContext.drawImage(images.moonFull, x - radius, y - radius, size, size);
   mapContext.restore();
 
   mapContext.beginPath();
   mapContext.arc(x, y, radius, 0, Math.PI * 2);
-  mapContext.lineWidth = 1.5;
+  mapContext.lineWidth = 1.5 * canvasScale;
   mapContext.strokeStyle = 'rgba(0, 0, 0, 0.55)';
   mapContext.stroke();
 }
 
-function render(dayImage, nightImage) {
+function render() {
   const now = new Date();
   // Breadcrumb for remote debugging on the kiosk (chrome://inspect).
   console.log(`chronomap redraw ${now.toISOString()}`);
@@ -155,12 +200,12 @@ function render(dayImage, nightImage) {
 
   // Night imagery, masked down to where the sun is below the horizon.
   nightContext.globalCompositeOperation = 'source-over';
-  nightContext.drawImage(nightImage, 0, 0, nightCanvas.width, nightCanvas.height);
+  nightContext.drawImage(images.night, 0, 0, nightCanvas.width, nightCanvas.height);
   nightContext.globalCompositeOperation = 'destination-in';
   nightContext.imageSmoothingEnabled = true;
-  nightContext.drawImage(maskCanvas, 0, 0, nightCanvas.width, nightCanvas.height);
+  nightContext.drawImage(mask.canvas, 0, 0, nightCanvas.width, nightCanvas.height);
 
-  mapContext.drawImage(dayImage, 0, 0, mapCanvas.width, mapCanvas.height);
+  mapContext.drawImage(images.day, 0, 0, mapCanvas.width, mapCanvas.height);
   mapContext.drawImage(nightCanvas, 0, 0);
   drawTwilightLine(subsolar);
 
@@ -173,21 +218,26 @@ function render(dayImage, nightImage) {
     lonToX(moon.longitude, mapCanvas.width),
     latToY(moon.latitude, mapCanvas.height),
     moonPhase(now),
-    moonImages.full,
-    moonImages.new,
   );
 }
 
-function scheduleUpdates(dayImage, nightImage) {
-  render(dayImage, nightImage);
+function renderMarkers() {
+  drawMarkers(
+    markersContext, cities, markersCanvas.width, markersCanvas.height,
+    MARKER_RADIUS * canvasScale,
+  );
+}
+
+function scheduleUpdates() {
+  render();
   // Recompute from the wall clock each tick so long sessions never drift.
   const delay = UPDATE_INTERVAL_MS - (Date.now() % UPDATE_INTERVAL_MS);
-  setTimeout(() => scheduleUpdates(dayImage, nightImage), delay);
+  setTimeout(scheduleUpdates, delay);
 }
 
 const DAY_PART_GLYPHS = { day: '☀', twilight: '◐', night: '☽' };
 
-function buildScoreboard(cities) {
+function buildScoreboard() {
   const scoreboard = document.getElementById('scoreboard');
   const home = cities.find((city) => city.home) ?? cities[0];
 
@@ -244,26 +294,35 @@ function buildScoreboard(cities) {
   updateClocks();
 }
 
+let resizeTimer = null;
+
+function handleResize() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (layout()) {
+      renderMarkers();
+      render();
+    }
+  }, 150);
+}
+
 async function start() {
-  const [dayImage, nightImage, moonFullImage, moonNewImage, citiesResponse] = await Promise.all([
+  const [day, night, moonFull, moonNew, citiesResponse] = await Promise.all([
     loadImage('assets/earth-day.jpg'),
     loadImage('assets/earth-night.jpg'),
     loadImage('assets/moon-full.png'),
     loadImage('assets/moon-new.png'),
     fetch('config/cities.json'),
   ]);
-  const cities = await citiesResponse.json();
-  moonImages.full = moonFullImage;
-  moonImages.new = moonNewImage;
+  Object.assign(images, { day, night, moonFull, moonNew });
+  cities = await citiesResponse.json();
 
-  nightCanvas.width = mapCanvas.width;
-  nightCanvas.height = mapCanvas.height;
-  scheduleUpdates(dayImage, nightImage);
+  layout();
+  renderMarkers();
+  scheduleUpdates();
   scheduleDailyReload();
-
-  const markersCanvas = document.getElementById('markers');
-  drawMarkers(markersCanvas.getContext('2d'), cities, markersCanvas.width, markersCanvas.height);
-  buildScoreboard(cities);
+  buildScoreboard();
+  window.addEventListener('resize', handleResize);
 }
 
 start().catch((error) => {

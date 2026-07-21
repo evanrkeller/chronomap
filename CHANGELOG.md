@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Display is resolution-aware: 4096×2048 assets, canvas sized to the
+  screen's native pixels (retina/4K crisp, lighter than before on the
+  Pi), sun and moon at 15 px, and a responsive layout that keeps the
+  scoreboard visible at any window shape (#25)
+
 - Initial city set is now Brisbane, Leeds (home), Cincinnati, Istanbul,
   and New Delhi, plus a UTC card; scoreboard cards order themselves
   west→east to match marker positions on the map (#19)

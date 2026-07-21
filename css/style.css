@@ -18,16 +18,28 @@ body {
   cursor: none;
 }
 
-/* The 2:1 equirectangular map fills the viewport width; on a 16:9
-   screen (1920x1080) that leaves a 120px bar up top for the clocks. */
+/* The scoreboard keeps a clamped height on every screen shape; the 2:1
+   map letterboxes into whatever space remains. On a 16:9 screen the
+   map fills the width exactly (1080p: ~119px bar; 4K: 150px bar). */
+:root {
+  --scoreboard-height: clamp(72px, 11vh, 150px);
+}
+
 #scoreboard {
-  height: calc(100vh - 50vw);
-  min-height: 0;
+  height: var(--scoreboard-height);
 }
 
 #map-area {
+  height: calc(100vh - var(--scoreboard-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#map-stack {
   position: relative;
-  height: 50vw;
+  aspect-ratio: 2 / 1;
+  width: min(100vw, calc((100vh - var(--scoreboard-height)) * 2));
 }
 
 #map,
@@ -35,13 +47,13 @@ body {
   position: absolute;
   inset: 0;
   display: block;
-  width: 100vw;
-  height: 50vw;
+  width: 100%;
+  height: 100%;
 }
 
 #scoreboard {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
   gap: 2vw;
   padding: 0 1vw;
@@ -58,7 +70,7 @@ body {
 }
 
 .city-name {
-  font-size: 1.3vw;
+  font-size: calc(var(--scoreboard-height) * 0.2);
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -66,14 +78,14 @@ body {
 }
 
 .city-time {
-  font-size: 2.6vw;
+  font-size: calc(var(--scoreboard-height) * 0.4);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
 }
 
 .city-weekday {
-  font-size: 1.1vw;
+  font-size: calc(var(--scoreboard-height) * 0.17);
   font-weight: 600;
   letter-spacing: 0.12em;
   color: #6b7683;

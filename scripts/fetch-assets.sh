@@ -47,7 +47,7 @@ process() {
   width=$(magick identify -format "%w" "$raw")
   roll=$(awk "BEGIN { printf \"%d\", $width * $ROLL_FRACTION + 0.5 }")
   echo "processing $raw (width $width, roll -$roll) -> $out"
-  magick "$raw" -roll -"$roll"+0 -resize 2048x1024\! "$@" -strip -quality 88 "$out"
+  magick "$raw" -roll -"$roll"+0 -resize 4096x2048\! "$@" -strip -quality 84 "$out"
 }
 
 # The moon icon composites a full-moon photo over a darkened copy, the
