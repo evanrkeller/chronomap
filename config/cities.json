@@ -1,0 +1,8 @@
+[
+  { "name": "Brisbane", "lat": -27.4698, "lon": 153.0251, "tz": "Australia/Brisbane" },
+  { "name": "Leeds", "lat": 33.5465, "lon": -86.5497, "tz": "America/Chicago", "home": true },
+  { "name": "Cincinnati", "lat": 39.1031, "lon": -84.512, "tz": "America/New_York" },
+  { "name": "UTC", "tz": "UTC" },
+  { "name": "Istanbul", "lat": 41.0082, "lon": 28.9784, "tz": "Europe/Istanbul" },
+  { "name": "New Delhi", "lat": 28.6139, "lon": 77.209, "tz": "Asia/Kolkata" }
+]
