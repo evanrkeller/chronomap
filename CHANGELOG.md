@@ -34,6 +34,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   keeps the defaults, and a configured home always wins without any
   prompt (#35)
 
+### Fixed
+
+- The mouse cursor no longer vanishes for interactive users: it shows
+  whenever the mouse moves (anywhere, including over the map) and
+  auto-hides after 5 idle seconds, so the wall kiosk stays clean while
+  a real user always sees their pointer (#43)
+
 ### Changed
 
 - A brand-new visitor now sees only two scoreboard tiles — home and

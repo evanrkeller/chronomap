@@ -11,6 +11,7 @@ import {
   loadSettings, effectiveCities, mapMode, detectedHomeFromPosition, validateLocation,
 } from './settings.js';
 import { initSettingsUi } from './settings-ui.js';
+import { initCursorAutoHide } from './cursor.js';
 
 const UPDATE_INTERVAL_MS = 60000;
 
@@ -421,6 +422,7 @@ async function start() {
   scheduleDailyReload();
   buildScoreboard();
   detectHomeLocation();
+  initCursorAutoHide(document.body);
   window.addEventListener('resize', handleResize);
 
   initSettingsUi({

@@ -14,7 +14,12 @@ body {
 body {
   display: flex;
   flex-direction: column;
-  /* Kiosk display: never show a pointer over the map. */
+}
+
+/* Kiosk cleanliness without stranding interactive users: js/cursor.js
+   adds this class after a few idle seconds and removes it on movement,
+   so a moving mouse is always visible and a still one disappears. */
+body.cursor-idle {
   cursor: none;
 }
 
