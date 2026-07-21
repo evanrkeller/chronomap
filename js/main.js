@@ -3,6 +3,7 @@ import { subsolarPoint, sinAltitude } from './solar.js';
 import { nightAlpha } from './terminator.js';
 import { drawMarkers } from './markers.js';
 import { formatCityTime, localDateKey } from './clock.js';
+import { scheduleDailyReload } from './kiosk.js';
 
 const UPDATE_INTERVAL_MS = 60000;
 
@@ -55,7 +56,10 @@ function renderMask(date) {
 }
 
 function render(dayImage, nightImage) {
-  renderMask(new Date());
+  const now = new Date();
+  // Breadcrumb for remote debugging on the kiosk (chrome://inspect).
+  console.log(`chronomap redraw ${now.toISOString()}`);
+  renderMask(now);
 
   // Night imagery, masked down to where the sun is below the horizon.
   nightContext.globalCompositeOperation = 'source-over';
@@ -125,6 +129,7 @@ async function start() {
   nightCanvas.width = mapCanvas.width;
   nightCanvas.height = mapCanvas.height;
   scheduleUpdates(dayImage, nightImage);
+  scheduleDailyReload();
 
   const markersCanvas = document.getElementById('markers');
   drawMarkers(markersCanvas.getContext('2d'), cities, markersCanvas.width, markersCanvas.height);

@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Kiosk hardening: daily self-reload at 3:00 AM local, hidden cursor,
+  redraw breadcrumbs in the console, and Raspberry Pi 3 kiosk setup
+  documentation (#11)
 - Zero-cost hosting on GitHub Pages, serving the repo root from `main`
   with no build step; total page weight ~650 KB (#10)
 - Scoreboard bar across the top showing live local time and weekday for

@@ -14,6 +14,8 @@ body {
 body {
   display: flex;
   flex-direction: column;
+  /* Kiosk display: never show a pointer over the map. */
+  cursor: none;
 }
 
 /* The 2:1 equirectangular map fills the viewport width; on a 16:9

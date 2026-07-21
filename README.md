@@ -34,6 +34,38 @@ The script downloads the NASA source mosaics into `assets/raw/` (gitignored),
 recenters them on the Leeds meridian, and rewrites `assets/earth-day.jpg`
 and `assets/earth-night.jpg`.
 
+## Raspberry Pi kiosk setup
+
+Tested target: Raspberry Pi 3 (1 GB RAM), Raspberry Pi OS with desktop,
+Chromium, 1920×1080 TV. The page reloads itself daily at 3:00 AM local
+time, so the kiosk picks up deployed changes without intervention.
+
+1. Disable screen blanking: `sudo raspi-config` → Display Options →
+   Screen Blanking → No. (On Wayland/labwc images this is the only step
+   needed; on X11 it disables DPMS and the screensaver.)
+
+2. Autostart Chromium in kiosk mode. Create
+   `~/.config/autostart/chronomap.desktop`:
+
+   ```ini
+   [Desktop Entry]
+   Type=Application
+   Name=ChronoMap
+   Exec=chromium-browser --kiosk --noerrdialogs --disable-session-crashed-bubble --disable-infobars --incognito https://evanrkeller.github.io/chronomap/
+   ```
+
+   (On older Raspberry Pi OS the binary may be `chromium` instead of
+   `chromium-browser`.)
+
+3. Reboot. The map should fill the screen with no cursor, scrollbars,
+   or browser chrome. The page itself hides the mouse pointer; if a
+   cursor still shows on X11 setups, `sudo apt install unclutter` and
+   add `unclutter -idle 1` as a second autostart entry.
+
+Debugging a live kiosk: each terminator redraw logs
+`chronomap redraw <timestamp>` to the console, visible via remote
+DevTools if you start Chromium with `--remote-debugging-port=9222`.
+
 ## Development
 
 No build step. Serve the repo root with any static server and open it:
