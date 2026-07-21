@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CENTER_LONGITUDE, lonToX, latToY } from '../js/geo.js';
+import { CENTER_LONGITUDE, lonToX, latToY, xToLon, yToLat } from '../js/geo.js';
 
 const WIDTH = 2048;
 const HEIGHT = 1024;
@@ -32,6 +32,22 @@ test('equator maps to the vertical center', () => {
 test('poles map to top and bottom', () => {
   assert.equal(latToY(90, HEIGHT), 0);
   assert.equal(latToY(-90, HEIGHT), HEIGHT);
+});
+
+test('xToLon inverts lonToX to within a pixel', () => {
+  for (const longitude of [-170, -86.5497, 0, 45, 120]) {
+    const roundTripped = xToLon(lonToX(longitude, WIDTH), WIDTH);
+    let error = Math.abs(roundTripped - longitude);
+    if (error > 180) error = 360 - error;
+    assert.ok(error < 360 / WIDTH, `lon ${longitude} round-tripped to ${roundTripped}`);
+  }
+});
+
+test('yToLat inverts latToY to within a pixel', () => {
+  for (const latitude of [-60, 0, 33.5465, 80]) {
+    const roundTripped = yToLat(latToY(latitude, HEIGHT), HEIGHT);
+    assert.ok(Math.abs(roundTripped - latitude) < 180 / HEIGHT);
+  }
 });
 
 test('London is right of center and in the northern half', () => {

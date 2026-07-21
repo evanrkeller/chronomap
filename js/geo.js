@@ -15,3 +15,14 @@ export function lonToX(longitude, mapWidth) {
 export function latToY(latitude, mapHeight) {
   return ((90 - latitude) / 180) * mapHeight;
 }
+
+// Inverse projection, used to shade the terminator mask pixel by pixel.
+// Samples the center of pixel column/row x/y.
+export function xToLon(x, mapWidth) {
+  const longitude = CENTER_LONGITUDE - 180 + ((x + 0.5) / mapWidth) * 360;
+  return ((longitude + 540) % 360) - 180;
+}
+
+export function yToLat(y, mapHeight) {
+  return 90 - ((y + 0.5) / mapHeight) * 180;
+}

@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Real-time day/night terminator: night-lights imagery blended over the
+  day map along the computed solar terminator with a smooth twilight
+  band, refreshed every minute (#7)
 - Full-screen page shell rendering the daytime world map on a canvas,
   centered on the Leeds, AL meridian, with a reserved top bar (#6)
 - Asset pipeline: `scripts/fetch-assets.sh` downloads NASA Blue Marble (day)
