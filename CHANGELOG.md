@@ -18,6 +18,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Sun icon at the subsolar point and moon icon at the sublunar point,
+  the moon drawn with its current phase (#22)
+
 - Subtle grey-blue contour on the night side marking the end of civil
   twilight (sun 6° below the horizon) (#21)
 

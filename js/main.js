@@ -1,5 +1,6 @@
 import { xToLon, yToLat, lonToX, latToY, mapOrder } from './geo.js';
 import { subsolarPoint, sinAltitude } from './solar.js';
+import { sublunarPoint, moonPhase } from './moon.js';
 import { nightAlpha, dayPart, civilTwilightCircle } from './terminator.js';
 import { drawMarkers } from './markers.js';
 import { formatCityTime, localDateKey } from './clock.js';
@@ -79,6 +80,61 @@ function drawTwilightLine(subsolar) {
   mapContext.stroke();
 }
 
+const SUN_CORE_RADIUS = 11;
+const SUN_GLOW_RADIUS = 34;
+const MOON_RADIUS = 17;
+
+// Sun icon at the subsolar point: a soft glow with a bright core.
+function drawSunIcon(x, y) {
+  const glow = mapContext.createRadialGradient(x, y, 0, x, y, SUN_GLOW_RADIUS);
+  glow.addColorStop(0, 'rgba(255, 236, 160, 0.9)');
+  glow.addColorStop(0.4, 'rgba(255, 215, 94, 0.35)');
+  glow.addColorStop(1, 'rgba(255, 215, 94, 0)');
+  mapContext.fillStyle = glow;
+  mapContext.beginPath();
+  mapContext.arc(x, y, SUN_GLOW_RADIUS, 0, Math.PI * 2);
+  mapContext.fill();
+
+  mapContext.beginPath();
+  mapContext.arc(x, y, SUN_CORE_RADIUS, 0, Math.PI * 2);
+  mapContext.fillStyle = '#fff3c4';
+  mapContext.fill();
+  mapContext.lineWidth = 2;
+  mapContext.strokeStyle = 'rgba(214, 158, 32, 0.9)';
+  mapContext.stroke();
+}
+
+// Moon icon at the sublunar point, drawn with its current phase: the
+// lit limb faces right while waxing, left while waning.
+function drawMoonIcon(x, y, phase) {
+  const radius = MOON_RADIUS;
+  mapContext.save();
+  mapContext.translate(x, y);
+  if (!phase.waxing) mapContext.scale(-1, 1);
+
+  mapContext.beginPath();
+  mapContext.arc(0, 0, radius, 0, Math.PI * 2);
+  mapContext.fillStyle = '#39424f';
+  mapContext.fill();
+
+  const terminatorRadius = radius * (2 * phase.illuminatedFraction - 1);
+  mapContext.beginPath();
+  mapContext.arc(0, 0, radius, -Math.PI / 2, Math.PI / 2, false);
+  mapContext.ellipse(
+    0, 0, Math.abs(terminatorRadius), radius, 0,
+    Math.PI / 2, -Math.PI / 2, terminatorRadius > 0,
+  );
+  mapContext.fillStyle = '#e9e6da';
+  mapContext.fill();
+
+  mapContext.beginPath();
+  mapContext.arc(0, 0, radius, 0, Math.PI * 2);
+  mapContext.lineWidth = 2;
+  mapContext.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+  mapContext.stroke();
+  mapContext.restore();
+}
+
 function render(dayImage, nightImage) {
   const now = new Date();
   // Breadcrumb for remote debugging on the kiosk (chrome://inspect).
@@ -96,6 +152,17 @@ function render(dayImage, nightImage) {
   mapContext.drawImage(dayImage, 0, 0, mapCanvas.width, mapCanvas.height);
   mapContext.drawImage(nightCanvas, 0, 0);
   drawTwilightLine(subsolar);
+
+  drawSunIcon(
+    lonToX(subsolar.longitude, mapCanvas.width),
+    latToY(subsolar.latitude, mapCanvas.height),
+  );
+  const moon = sublunarPoint(now);
+  drawMoonIcon(
+    lonToX(moon.longitude, mapCanvas.width),
+    latToY(moon.latitude, mapCanvas.height),
+    moonPhase(now),
+  );
 }
 
 function scheduleUpdates(dayImage, nightImage) {
