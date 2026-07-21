@@ -50,9 +50,20 @@ let centerLon = ASSET_CENTER_LONGITUDE;
 let homeLon = ASSET_CENTER_LONGITUDE;
 let mode = 'home';
 
+// Even reading the window.localStorage property can throw (blocked
+// site data, damaged profile) — a storage-less kiosk must still boot
+// with defaults rather than fall into start()'s reload-retry loop.
+const settingsStorage = (() => {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+})();
+
 // Re-derives the rendered city list, mode, and map center from storage.
 function applySettings() {
-  const settings = loadSettings(window.localStorage);
+  const settings = loadSettings(settingsStorage);
   cities = effectiveCities(defaultCities, settings);
   mode = mapMode(settings);
   const home = cities.find((city) => city.home) ?? cities[0];
@@ -377,7 +388,7 @@ async function start() {
   window.addEventListener('resize', handleResize);
 
   initSettingsUi({
-    storage: window.localStorage,
+    storage: settingsStorage,
     onChange: () => {
       applySettings();
       render();

@@ -88,11 +88,13 @@ export function initSettingsUi({ storage, onChange }) {
       problems.push(...validateLocation(location).map((p) => `Location ${row + 1}: ${p}`));
       locations.push(location);
     }
-    // Rows left blank by someone who never curated a list keep the
-    // default cities; an emptied previously-curated list means "just
-    // home and UTC".
-    if (locations.length > 0 || Array.isArray(settings.locations)) {
+    // No rows filled in means the default city set — including when a
+    // previously curated list is cleared, so the defaults are always
+    // recoverable from the dialog itself.
+    if (locations.length > 0) {
       settings.locations = locations;
+    } else {
+      delete settings.locations;
     }
 
     if (problems.length > 0) {
@@ -102,7 +104,13 @@ export function initSettingsUi({ storage, onChange }) {
     }
 
     settings.mode = form.elements['map-mode'].value;
-    saveSettings(storage, settings);
+    try {
+      saveSettings(storage, settings);
+    } catch {
+      error.textContent = 'Settings could not be saved — browser storage is unavailable.';
+      error.hidden = false;
+      return;
+    }
     dialog.close();
     onChange();
   });

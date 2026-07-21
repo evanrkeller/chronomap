@@ -154,14 +154,13 @@ body {
    the map. Interactive chrome restores the cursor the kiosk hides. */
 #settings-button {
   position: fixed;
-  right: 16px;
-  bottom: 16px;
-  width: 44px;
-  height: 44px;
-  padding: 8px;
+  right: 0;
+  bottom: 0;
+  width: 60px;
+  height: 60px;
+  padding: 8px 16px 16px 8px;
   border: none;
-  border-radius: 50%;
-  background: rgba(10, 14, 22, 0.55);
+  background: transparent;
   color: #9aa7b5;
   opacity: 0.45;
   cursor: pointer;
@@ -178,6 +177,10 @@ body {
   display: block;
   width: 100%;
   height: 100%;
+  padding: 7px;
+  border-radius: 50%;
+  background: rgba(10, 14, 22, 0.55);
+  box-sizing: border-box;
 }
 
 #settings-dialog {

@@ -53,11 +53,17 @@ time, so the kiosk picks up deployed changes without intervention.
    [Desktop Entry]
    Type=Application
    Name=ChronoMap
-   Exec=chromium-browser --kiosk --noerrdialogs --disable-session-crashed-bubble --disable-infobars --incognito https://evanrkeller.github.io/chronomap/
+   Exec=chromium-browser --kiosk --noerrdialogs --disable-session-crashed-bubble --disable-infobars https://evanrkeller.github.io/chronomap/
    ```
 
    (On older Raspberry Pi OS the binary may be `chromium` instead of
    `chromium-browser`.)
+
+   Don't add `--incognito`: settings made through the gear menu live in
+   localStorage, and incognito storage evaporates on every browser
+   restart — a reboot or crash would silently reset the display to the
+   built-in defaults. `--disable-session-crashed-bubble` already keeps
+   crash-restore prompts off the screen.
 
 3. Reboot. The map should fill the screen with no cursor, scrollbars,
    or browser chrome. The page itself hides the mouse pointer; if a
