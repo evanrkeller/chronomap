@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Scoreboard bar across the top showing live local time and weekday for
+  each configured city, with cities on a different calendar day than
+  Leeds highlighted (#9)
+- Configurable city markers from `config/cities.json`, drawn on an
+  overlay with labels readable over day and night (#8)
 - Real-time day/night terminator: night-lights imagery blended over the
   day map along the computed solar terminator with a smooth twilight
   band, refreshed every minute (#7)

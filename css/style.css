@@ -36,3 +36,52 @@ body {
   width: 100vw;
   height: 50vw;
 }
+
+#scoreboard {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 2vw;
+  padding: 0 1vw;
+  color: #fff;
+  font-family: system-ui, sans-serif;
+}
+
+.city-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 10vw;
+}
+
+.city-name {
+  font-size: 1.3vw;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #9aa7b5;
+}
+
+.city-time {
+  font-size: 2.6vw;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.city-weekday {
+  font-size: 1.1vw;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: #6b7683;
+}
+
+/* Cities living in a different calendar day than home (Leeds). */
+.city-tile.other-day .city-weekday {
+  color: #ffb347;
+}
+
+.city-tile.home .city-name {
+  color: #ffb347;
+}

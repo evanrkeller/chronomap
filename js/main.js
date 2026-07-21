@@ -2,6 +2,7 @@ import { xToLon, yToLat } from './geo.js';
 import { subsolarPoint, sinAltitude } from './solar.js';
 import { nightAlpha } from './terminator.js';
 import { drawMarkers } from './markers.js';
+import { formatCityTime, localDateKey } from './clock.js';
 
 const UPDATE_INTERVAL_MS = 60000;
 
@@ -74,6 +75,45 @@ function scheduleUpdates(dayImage, nightImage) {
   setTimeout(() => scheduleUpdates(dayImage, nightImage), delay);
 }
 
+function buildScoreboard(cities) {
+  const scoreboard = document.getElementById('scoreboard');
+  const tiles = cities.map((city, index) => {
+    const tile = document.createElement('div');
+    tile.className = index === 0 ? 'city-tile home' : 'city-tile';
+
+    const name = document.createElement('div');
+    name.className = 'city-name';
+    name.textContent = city.name;
+
+    const time = document.createElement('div');
+    time.className = 'city-time';
+
+    const weekday = document.createElement('div');
+    weekday.className = 'city-weekday';
+
+    tile.append(name, time, weekday);
+    scoreboard.append(tile);
+    return { city, tile, time, weekday };
+  });
+
+  const homeTimezone = cities[0].tz;
+
+  function updateClocks() {
+    const now = new Date();
+    const homeDate = localDateKey(now, homeTimezone);
+    for (const { city, tile, time, weekday } of tiles) {
+      const formatted = formatCityTime(now, city.tz);
+      time.textContent = formatted.time;
+      weekday.textContent = formatted.weekday;
+      tile.classList.toggle('other-day', localDateKey(now, city.tz) !== homeDate);
+    }
+    // Re-align to just past the next minute boundary.
+    setTimeout(updateClocks, 60000 - (Date.now() % 60000) + 250);
+  }
+
+  updateClocks();
+}
+
 async function start() {
   const [dayImage, nightImage, citiesResponse] = await Promise.all([
     loadImage('assets/earth-day.jpg'),
@@ -88,6 +128,7 @@ async function start() {
 
   const markersCanvas = document.getElementById('markers');
   drawMarkers(markersCanvas.getContext('2d'), cities, markersCanvas.width, markersCanvas.height);
+  buildScoreboard(cities);
 }
 
 start();
