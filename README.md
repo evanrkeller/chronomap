@@ -18,14 +18,15 @@ kiosk mode on a Raspberry Pi 3 at 1920×1080.
   anywhere); if the location prompt is declined, home falls back to
   Birmingham, AL.
 - A gear menu (bottom-right) for settings, persisted in localStorage
-  with no server side:
+  with no server-side component:
   - **Home location** — label, latitude, longitude, IANA timezone. A
     saved home overrides detection and gets the yellow scoreboard label.
   - **Up to 4 additional locations**, for at most six tiles (home, UTC,
     and the additions), each with a matching map marker.
   - **Find buttons** that look up a place name via the free, keyless
     Open-Meteo geocoder and fill in coordinates and timezone — the only
-    network call the app ever makes, and only when you click Find.
+    third-party network call the app ever makes, and only when you
+    click Find.
   - **Map centering** — home-centered (default) keeps home mid-screen;
     sun-centered keeps the subsolar point mid-screen so the map rolls
     beneath a fixed day-night outline through the day.
