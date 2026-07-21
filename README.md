@@ -65,6 +65,13 @@ time, so the kiosk picks up deployed changes without intervention.
    built-in defaults. `--disable-session-crashed-bubble` already keeps
    crash-restore prompts off the screen.
 
+   With no home configured, ChronoMap asks the browser for the
+   visitor's location on load. On an unattended kiosk that prompt has
+   no one to answer it and reappears after the daily reload — so during
+   setup either configure a home in the gear menu (no prompt is made
+   once a home is saved) or answer the location prompt once; Chromium
+   remembers the decision for the origin.
+
 3. Reboot. The map should fill the screen with no cursor, scrollbars,
    or browser chrome. The page itself hides the mouse pointer; if a
    cursor still shows on X11 setups, `sudo apt install unclutter` and

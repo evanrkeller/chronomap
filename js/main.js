@@ -8,7 +8,7 @@ import { drawMarkers } from './markers.js';
 import { formatCityTime, localDateKey, copyrightNotice } from './clock.js';
 import { scheduleDailyReload } from './kiosk.js';
 import {
-  loadSettings, effectiveCities, mapMode, detectedHomeFromPosition,
+  loadSettings, effectiveCities, mapMode, detectedHomeFromPosition, validateLocation,
 } from './settings.js';
 import { initSettingsUi } from './settings-ui.js';
 
@@ -364,12 +364,16 @@ function buildScoreboard() {
   updateClocks();
 }
 
-// Ask for the visitor's location only when no home is configured.
+// Ask for the visitor's location only when no usable home is
+// configured (an invalid stored home already falls back, so detection
+// should still win over the default) and no fix is already in hand.
 // Non-blocking: defaults are already on screen, and the map recenters
 // if (and only if) a usable position arrives. Denial, timeout, or a
 // missing API all leave the display exactly as it was.
 function detectHomeLocation() {
-  if (loadSettings(settingsStorage)?.home) return;
+  if (detectedHome) return;
+  const storedHome = loadSettings(settingsStorage)?.home;
+  if (storedHome && validateLocation(storedHome).length === 0) return;
   if (!navigator.geolocation) return;
   navigator.geolocation.getCurrentPosition(
     (position) => {
@@ -381,7 +385,10 @@ function detectHomeLocation() {
       render();
       buildScoreboard();
     },
-    () => {},
+    (error) => {
+      // Breadcrumb for the kiosk (chrome://inspect); no coordinates.
+      console.log(`chronomap geolocation unavailable (code ${error?.code})`);
+    },
     { enableHighAccuracy: false, timeout: 8000, maximumAge: 3600000 },
   );
 }
@@ -422,6 +429,9 @@ async function start() {
       applySettings();
       render();
       buildScoreboard();
+      // Clearing the home should behave like never having had one —
+      // self-gated: no-op when a home stands or a fix is already held.
+      detectHomeLocation();
     },
   });
 }
