@@ -24,10 +24,15 @@ test('the display starts with the cursor hidden', () => {
 });
 
 test('mouse movement shows the cursor', () => {
-  const element = fakeElement();
-  initCursorAutoHide(element);
-  element.fire('mousemove');
-  assert.equal(element.isIdle(), false);
+  mock.timers.enable({ apis: ['setTimeout'] });
+  try {
+    const element = fakeElement();
+    initCursorAutoHide(element);
+    element.fire('mousemove');
+    assert.equal(element.isIdle(), false);
+  } finally {
+    mock.timers.reset();
+  }
 });
 
 test('the cursor hides again after the idle delay', () => {
