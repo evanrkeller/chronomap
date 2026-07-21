@@ -21,6 +21,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   six scoreboard tiles and map markers; a curated list replaces the
   default city set, and clearing it back to nothing restores the
   defaults (#28)
+- Keller Solutions attribution badge in the bottom-left corner — the
+  RampScope logo mark plus a copyright line whose year updates itself
+  (#29)
 
 ### Changed
 

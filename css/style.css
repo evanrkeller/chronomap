@@ -126,6 +126,30 @@ body {
   color: #ffd500;
 }
 
+/* Keller Solutions attribution, mirroring the RampScope footer badge:
+   logo mark + copyright, bottom-left, never intercepting input. */
+#attribution {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+
+#attribution .ks-logo {
+  width: 28px;
+  height: 28px;
+}
+
+#attribution .copyright {
+  font-family: system-ui, sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: #9aa7b5;
+}
+
 /* Settings gear: bottom-right, faint until hovered so it never fights
    the map. Interactive chrome restores the cursor the kiosk hides. */
 #settings-button {

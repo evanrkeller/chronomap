@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatCityTime, localDateKey } from '../js/clock.js';
+import { formatCityTime, localDateKey, copyrightNotice } from '../js/clock.js';
 
 // 2026-07-21 03:20 UTC: the evening of Monday July 20 in the US,
 // already Tuesday July 21 in Tokyo.
@@ -21,4 +21,12 @@ test('formats Tokyo time across the date line', () => {
 test('localDateKey distinguishes cities on different calendar days', () => {
   assert.notEqual(localDateKey(instant, 'Asia/Tokyo'), localDateKey(instant, 'America/Chicago'));
   assert.equal(localDateKey(instant, 'America/New_York'), localDateKey(instant, 'America/Chicago'));
+});
+
+test('copyright notice carries the current year', () => {
+  assert.equal(copyrightNotice(new Date(2026, 0, 15)), '© 2026 Keller Solutions');
+});
+
+test('copyright notice rolls over at New Year with no code change', () => {
+  assert.equal(copyrightNotice(new Date(2027, 0, 1)), '© 2027 Keller Solutions');
 });

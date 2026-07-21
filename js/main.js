@@ -5,7 +5,7 @@ import { subsolarPoint, sinAltitude } from './solar.js';
 import { sublunarPoint, moonPhase } from './moon.js';
 import { nightAlpha, dayPart, civilTwilightCircle } from './terminator.js';
 import { drawMarkers } from './markers.js';
-import { formatCityTime, localDateKey } from './clock.js';
+import { formatCityTime, localDateKey, copyrightNotice } from './clock.js';
 import { scheduleDailyReload } from './kiosk.js';
 import { loadSettings, effectiveCities, mapMode } from './settings.js';
 import { initSettingsUi } from './settings-ui.js';
@@ -367,6 +367,8 @@ async function start() {
   Object.assign(images, { day, night, moonFull, moonNew });
   defaultCities = await citiesResponse.json();
   applySettings();
+
+  document.getElementById('copyright').textContent = copyrightNotice();
 
   layout();
   scheduleUpdates();
