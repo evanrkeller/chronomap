@@ -26,6 +26,9 @@ const maskPixels = maskContext.createImageData(MASK_WIDTH, MASK_HEIGHT);
 const nightCanvas = document.createElement('canvas');
 const nightContext = nightCanvas.getContext('2d');
 
+// Loaded in start() before the first render.
+const moonImages = { full: null, new: null };
+
 // Longitude/latitude of every mask column/row, precomputed once.
 const maskLongitudes = new Float64Array(MASK_WIDTH);
 for (let x = 0; x < MASK_WIDTH; x += 1) maskLongitudes[x] = xToLon(x, MASK_WIDTH);
@@ -82,7 +85,7 @@ function drawTwilightLine(subsolar) {
 
 const SUN_CORE_RADIUS = 11;
 const SUN_GLOW_RADIUS = 34;
-const MOON_RADIUS = 17;
+const MOON_RADIUS = 12;
 
 // Sun icon at the subsolar point: a soft glow with a bright core.
 function drawSunIcon(x, y) {
@@ -104,35 +107,43 @@ function drawSunIcon(x, y) {
   mapContext.stroke();
 }
 
-// Moon icon at the sublunar point, drawn with its current phase: the
-// lit limb faces right while waxing, left while waning.
-function drawMoonIcon(x, y, phase) {
-  const radius = MOON_RADIUS;
-  mapContext.save();
-  mapContext.translate(x, y);
-  if (!phase.waxing) mapContext.scale(-1, 1);
-
-  mapContext.beginPath();
-  mapContext.arc(0, 0, radius, 0, Math.PI * 2);
-  mapContext.fillStyle = '#39424f';
-  mapContext.fill();
-
+// The lit region of the moon's disc: a semicircle on the lit side plus
+// the elliptical terminator. Traced in place so the photo underneath is
+// never mirrored — only the mask flips between waxing (lit right) and
+// waning (lit left).
+function tracePhasePath(x, y, radius, phase) {
+  const litRight = phase.waxing;
   const terminatorRadius = radius * (2 * phase.illuminatedFraction - 1);
   mapContext.beginPath();
-  mapContext.arc(0, 0, radius, -Math.PI / 2, Math.PI / 2, false);
+  mapContext.arc(x, y, radius, -Math.PI / 2, Math.PI / 2, !litRight);
   mapContext.ellipse(
-    0, 0, Math.abs(terminatorRadius), radius, 0,
-    Math.PI / 2, -Math.PI / 2, terminatorRadius > 0,
+    x, y, Math.abs(terminatorRadius), radius, 0,
+    Math.PI / 2, -Math.PI / 2,
+    litRight ? terminatorRadius > 0 : terminatorRadius < 0,
   );
-  mapContext.fillStyle = '#e9e6da';
-  mapContext.fill();
+  mapContext.closePath();
+}
+
+// Moon icon at the sublunar point: a darkened new-moon photo as the
+// base with the full-moon photo revealed across the lit region — the
+// same composite the earth itself gets.
+function drawMoonIcon(x, y, phase, moonFullImage, moonNewImage) {
+  const radius = MOON_RADIUS;
+  const size = radius * 2;
+
+  mapContext.drawImage(moonNewImage, x - radius, y - radius, size, size);
+
+  mapContext.save();
+  tracePhasePath(x, y, radius, phase);
+  mapContext.clip();
+  mapContext.drawImage(moonFullImage, x - radius, y - radius, size, size);
+  mapContext.restore();
 
   mapContext.beginPath();
-  mapContext.arc(0, 0, radius, 0, Math.PI * 2);
-  mapContext.lineWidth = 2;
-  mapContext.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+  mapContext.arc(x, y, radius, 0, Math.PI * 2);
+  mapContext.lineWidth = 1.5;
+  mapContext.strokeStyle = 'rgba(0, 0, 0, 0.55)';
   mapContext.stroke();
-  mapContext.restore();
 }
 
 function render(dayImage, nightImage) {
@@ -162,6 +173,8 @@ function render(dayImage, nightImage) {
     lonToX(moon.longitude, mapCanvas.width),
     latToY(moon.latitude, mapCanvas.height),
     moonPhase(now),
+    moonImages.full,
+    moonImages.new,
   );
 }
 
@@ -232,12 +245,16 @@ function buildScoreboard(cities) {
 }
 
 async function start() {
-  const [dayImage, nightImage, citiesResponse] = await Promise.all([
+  const [dayImage, nightImage, moonFullImage, moonNewImage, citiesResponse] = await Promise.all([
     loadImage('assets/earth-day.jpg'),
     loadImage('assets/earth-night.jpg'),
+    loadImage('assets/moon-full.png'),
+    loadImage('assets/moon-new.png'),
     fetch('config/cities.json'),
   ]);
   const cities = await citiesResponse.json();
+  moonImages.full = moonFullImage;
+  moonImages.new = moonNewImage;
 
   nightCanvas.width = mapCanvas.width;
   nightCanvas.height = mapCanvas.height;

@@ -20,6 +20,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Sun icon at the subsolar point and moon icon at the sublunar point,
   the moon drawn with its current phase (#22)
+- Moon icon now composites NASA Galileo moon photography — full-moon
+  photo revealed over a darkened copy by the phase mask — and is
+  drawn smaller (#24)
 
 - Subtle grey-blue contour on the night side marking the end of civil
   twilight (sun 6° below the horizon) (#21)

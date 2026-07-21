@@ -17,6 +17,8 @@ Map imagery is public domain, courtesy of NASA:
   (July 2004, with topography and bathymetry), NASA Earth Observatory.
 - **Nighttime**: [Earth at Night 2012](https://earthobservatory.nasa.gov/images/79803/night-lights-2012-the-black-marble)
   ("Black Marble"), NASA Earth Observatory / NOAA NGDC, Suomi NPP VIIRS.
+- **Moon**: [Galileo full-disc color mosaic (PIA00405)](https://images.nasa.gov/details/PIA00405),
+  NASA/JPL.
 
 These are the same NASA products behind the
 [GMT earth_day/earth_night remote datasets](https://www.generic-mapping-tools.org/remote-datasets/earth-daynight.html).
