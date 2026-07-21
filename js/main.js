@@ -7,7 +7,9 @@ import { nightAlpha, dayPart, civilTwilightCircle } from './terminator.js';
 import { drawMarkers } from './markers.js';
 import { formatCityTime, localDateKey, copyrightNotice } from './clock.js';
 import { scheduleDailyReload } from './kiosk.js';
-import { loadSettings, effectiveCities, mapMode } from './settings.js';
+import {
+  loadSettings, effectiveCities, mapMode, detectedHomeFromPosition,
+} from './settings.js';
 import { initSettingsUi } from './settings-ui.js';
 
 const UPDATE_INTERVAL_MS = 60000;
@@ -61,10 +63,14 @@ const settingsStorage = (() => {
   }
 })();
 
+// The visitor's geolocated home — in-memory only, never persisted, and
+// outranked by any home saved in settings.
+let detectedHome = null;
+
 // Re-derives the rendered city list, mode, and map center from storage.
 function applySettings() {
   const settings = loadSettings(settingsStorage);
-  cities = effectiveCities(defaultCities, settings);
+  cities = effectiveCities(defaultCities, settings, detectedHome);
   mode = mapMode(settings);
   const home = cities.find((city) => city.home) ?? cities[0];
   homeLon = typeof home?.lon === 'number' ? home.lon : ASSET_CENTER_LONGITUDE;
@@ -358,6 +364,28 @@ function buildScoreboard() {
   updateClocks();
 }
 
+// Ask for the visitor's location only when no home is configured.
+// Non-blocking: defaults are already on screen, and the map recenters
+// if (and only if) a usable position arrives. Denial, timeout, or a
+// missing API all leave the display exactly as it was.
+function detectHomeLocation() {
+  if (loadSettings(settingsStorage)?.home) return;
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      detectedHome = detectedHomeFromPosition(
+        position, new Intl.DateTimeFormat().resolvedOptions().timeZone,
+      );
+      if (!detectedHome) return;
+      applySettings();
+      render();
+      buildScoreboard();
+    },
+    () => {},
+    { enableHighAccuracy: false, timeout: 8000, maximumAge: 3600000 },
+  );
+}
+
 let resizeTimer = null;
 
 function handleResize() {
@@ -385,6 +413,7 @@ async function start() {
   scheduleUpdates();
   scheduleDailyReload();
   buildScoreboard();
+  detectHomeLocation();
   window.addEventListener('resize', handleResize);
 
   initSettingsUi({

@@ -28,6 +28,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   the free, keyless Open-Meteo geocoder and fills latitude, longitude,
   and timezone from the picked match — requests happen only when the
   user searches, so the display stays fully static (#33)
+- First-visit auto-home: with no home configured, the browser asks for
+  the visitor's location and the map recenters on it (browser timezone,
+  in-memory only — never stored or sent anywhere); denial or failure
+  keeps the defaults, and a configured home always wins without any
+  prompt (#35)
 
 ### Changed
 
