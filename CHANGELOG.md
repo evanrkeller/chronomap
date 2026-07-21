@@ -6,7 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Settings panel behind a corner gear icon: set a home location (label,
+  latitude, longitude, IANA timezone) that recenters the map, replaces
+  the default home on the scoreboard with a yellow label, and persists
+  in localStorage — corrupt or invalid stored settings fall back to the
+  built-in defaults (#26)
+- Map centering toggle in settings: home-centered (default) keeps home
+  mid-screen; sun-centered keeps the subsolar longitude mid-screen so
+  the imagery rolls beneath a fixed day-night outline (#27)
+- Up to four additional locations in settings, each with label,
+  coordinates, and timezone — home + UTC + the additions give at most
+  six scoreboard tiles and map markers; a curated list replaces the
+  default city set, and clearing it back to nothing restores the
+  defaults (#28)
+- Keller Solutions attribution badge in the bottom-left corner — the
+  RampScope logo mark plus a copyright line whose year updates itself
+  (#29)
+
 ### Changed
+
+- Map centering moved from asset time to render time: the projection
+  takes a center meridian and the pre-rolled imagery is drawn with a
+  wrapped offset, so any longitude can sit mid-screen (#26)
 
 - Display is resolution-aware: 4096×2048 assets, canvas sized to the
   screen's native pixels (retina/4K crisp, lighter than before on the

@@ -1,10 +1,14 @@
-import { xToLon, yToLat, lonToX, latToY, mapOrder } from './geo.js';
+import {
+  ASSET_CENTER_LONGITUDE, xToLon, yToLat, lonToX, latToY, mapOrder, imageRollOffset,
+} from './geo.js';
 import { subsolarPoint, sinAltitude } from './solar.js';
 import { sublunarPoint, moonPhase } from './moon.js';
 import { nightAlpha, dayPart, civilTwilightCircle } from './terminator.js';
 import { drawMarkers } from './markers.js';
-import { formatCityTime, localDateKey } from './clock.js';
+import { formatCityTime, localDateKey, copyrightNotice } from './clock.js';
 import { scheduleDailyReload } from './kiosk.js';
+import { loadSettings, effectiveCities, mapMode } from './settings.js';
+import { initSettingsUi } from './settings-ui.js';
 
 const UPDATE_INTERVAL_MS = 60000;
 
@@ -32,7 +36,40 @@ const nightContext = nightCanvas.getContext('2d');
 
 // Loaded in start() before the first render.
 const images = { day: null, night: null, moonFull: null, moonNew: null };
+let defaultCities = [];
 let cities = [];
+
+// Longitude at the horizontal center of the display. In home-centered
+// mode this is the home longitude; in sun-centered mode render() moves
+// it to the subsolar longitude each tick so the imagery rolls beneath
+// a visually fixed day-night outline.
+let centerLon = ASSET_CENTER_LONGITUDE;
+
+// Home longitude — the stable anchor the scoreboard order always uses,
+// so tiles never reshuffle as the sun-centered map drifts.
+let homeLon = ASSET_CENTER_LONGITUDE;
+let mode = 'home';
+
+// Even reading the window.localStorage property can throw (blocked
+// site data, damaged profile) — a storage-less kiosk must still boot
+// with defaults rather than fall into start()'s reload-retry loop.
+const settingsStorage = (() => {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+})();
+
+// Re-derives the rendered city list, mode, and map center from storage.
+function applySettings() {
+  const settings = loadSettings(settingsStorage);
+  cities = effectiveCities(defaultCities, settings);
+  mode = mapMode(settings);
+  const home = cities.find((city) => city.home) ?? cities[0];
+  homeLon = typeof home?.lon === 'number' ? home.lon : ASSET_CENTER_LONGITUDE;
+  centerLon = homeLon;
+}
 
 // Canvas pixels per CSS pixel for the current layout.
 let canvasScale = 1;
@@ -50,8 +87,6 @@ function buildMask(canvasWidth) {
   canvas.height = height;
   const context = canvas.getContext('2d');
 
-  const longitudes = new Float64Array(width);
-  for (let x = 0; x < width; x += 1) longitudes[x] = xToLon(x, width);
   const latitudes = new Float64Array(height);
   for (let y = 0; y < height; y += 1) latitudes[y] = yToLat(y, height);
 
@@ -59,7 +94,8 @@ function buildMask(canvasWidth) {
     canvas,
     context,
     pixels: context.createImageData(width, height),
-    longitudes,
+    longitudes: new Float64Array(width),
+    center: null, // filled by renderMask for the active center
     latitudes,
     width,
     height,
@@ -95,6 +131,12 @@ function loadImage(src) {
 }
 
 function renderMask(subsolar) {
+  if (mask.center !== centerLon) {
+    for (let x = 0; x < mask.width; x += 1) {
+      mask.longitudes[x] = xToLon(x, mask.width, centerLon);
+    }
+    mask.center = centerLon;
+  }
   const data = mask.pixels.data;
   let offset = 0;
   for (let y = 0; y < mask.height; y += 1) {
@@ -116,7 +158,7 @@ function drawTwilightLine(subsolar) {
   mapContext.beginPath();
   let previousX = null;
   for (const point of points) {
-    const x = lonToX(point.longitude, width);
+    const x = lonToX(point.longitude, width, centerLon);
     const y = latToY(point.latitude, height);
     if (previousX === null || Math.abs(x - previousX) > width / 2) {
       mapContext.moveTo(x, y); // new segment at the map-edge wrap
@@ -191,40 +233,56 @@ function drawMoonIcon(x, y, phase) {
   mapContext.stroke();
 }
 
+// Draws a pre-rolled (Leeds-centered) asset shifted so the active
+// center longitude lands mid-canvas, with a second copy filling the
+// wrapped edge.
+function drawRolled(context, image, width, height) {
+  const offset = Math.round(imageRollOffset(centerLon, width));
+  context.drawImage(image, -offset, 0, width, height);
+  if (offset !== 0) context.drawImage(image, width - offset, 0, width, height);
+}
+
 function render() {
   const now = new Date();
   // Breadcrumb for remote debugging on the kiosk (chrome://inspect).
   console.log(`chronomap redraw ${now.toISOString()}`);
   const subsolar = subsolarPoint(now);
+  if (mode === 'sun') centerLon = subsolar.longitude;
   renderMask(subsolar);
 
   // Night imagery, masked down to where the sun is below the horizon.
+  // The mask is computed in screen space for the active center, so only
+  // the imagery needs rolling.
   nightContext.globalCompositeOperation = 'source-over';
-  nightContext.drawImage(images.night, 0, 0, nightCanvas.width, nightCanvas.height);
+  drawRolled(nightContext, images.night, nightCanvas.width, nightCanvas.height);
   nightContext.globalCompositeOperation = 'destination-in';
   nightContext.imageSmoothingEnabled = true;
   nightContext.drawImage(mask.canvas, 0, 0, nightCanvas.width, nightCanvas.height);
 
-  mapContext.drawImage(images.day, 0, 0, mapCanvas.width, mapCanvas.height);
+  drawRolled(mapContext, images.day, mapCanvas.width, mapCanvas.height);
   mapContext.drawImage(nightCanvas, 0, 0);
   drawTwilightLine(subsolar);
 
   drawSunIcon(
-    lonToX(subsolar.longitude, mapCanvas.width),
+    lonToX(subsolar.longitude, mapCanvas.width, centerLon),
     latToY(subsolar.latitude, mapCanvas.height),
   );
   const moon = sublunarPoint(now);
   drawMoonIcon(
-    lonToX(moon.longitude, mapCanvas.width),
+    lonToX(moon.longitude, mapCanvas.width, centerLon),
     latToY(moon.latitude, mapCanvas.height),
     moonPhase(now),
   );
+
+  // Markers follow the same center, which drifts each tick in
+  // sun-centered mode — redraw them with every frame.
+  renderMarkers();
 }
 
 function renderMarkers() {
   drawMarkers(
     markersContext, cities, markersCanvas.width, markersCanvas.height,
-    MARKER_RADIUS * canvasScale,
+    centerLon, MARKER_RADIUS * canvasScale,
   );
 }
 
@@ -237,14 +295,20 @@ function scheduleUpdates() {
 
 const DAY_PART_GLYPHS = { day: '☀', twilight: '◐', night: '☽' };
 
+// Rebuilt whenever settings change; the previous build's clock timer is
+// cancelled so only one update loop ever runs.
+let clockTimer = null;
+
 function buildScoreboard() {
+  clearTimeout(clockTimer);
   const scoreboard = document.getElementById('scoreboard');
+  scoreboard.replaceChildren();
   const home = cities.find((city) => city.home) ?? cities[0];
 
   // Cards run west→east in the same order the markers appear on the
   // map; UTC (no coordinates) slots in at the Greenwich meridian.
   const ordered = [...cities].sort(
-    (a, b) => mapOrder(a.lon ?? 0) - mapOrder(b.lon ?? 0),
+    (a, b) => mapOrder(a.lon ?? 0, homeLon) - mapOrder(b.lon ?? 0, homeLon),
   );
 
   const tiles = ordered.map((city) => {
@@ -288,7 +352,7 @@ function buildScoreboard() {
       }
     }
     // Re-align to just past the next minute boundary.
-    setTimeout(updateClocks, 60000 - (Date.now() % 60000) + 250);
+    clockTimer = setTimeout(updateClocks, 60000 - (Date.now() % 60000) + 250);
   }
 
   updateClocks();
@@ -299,10 +363,7 @@ let resizeTimer = null;
 function handleResize() {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
-    if (layout()) {
-      renderMarkers();
-      render();
-    }
+    if (layout()) render();
   }, 150);
 }
 
@@ -315,14 +376,25 @@ async function start() {
     fetch('config/cities.json'),
   ]);
   Object.assign(images, { day, night, moonFull, moonNew });
-  cities = await citiesResponse.json();
+  defaultCities = await citiesResponse.json();
+  applySettings();
+
+  document.getElementById('copyright').textContent = copyrightNotice();
 
   layout();
-  renderMarkers();
   scheduleUpdates();
   scheduleDailyReload();
   buildScoreboard();
   window.addEventListener('resize', handleResize);
+
+  initSettingsUi({
+    storage: settingsStorage,
+    onChange: () => {
+      applySettings();
+      render();
+      buildScoreboard();
+    },
+  });
 }
 
 start().catch((error) => {

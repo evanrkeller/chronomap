@@ -11,10 +11,96 @@
   <main id="map-area">
     <div id="map-stack">
       <canvas id="map" width="2048" height="1024"
-              aria-label="World map centered on Leeds, Alabama showing current day and night regions"></canvas>
+              aria-label="World map showing current day and night regions"></canvas>
       <canvas id="markers" width="2048" height="1024" aria-hidden="true"></canvas>
     </div>
   </main>
+
+  <div id="attribution">
+    <svg class="ks-logo" viewBox="0 0 63.5 63.496" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Keller Solutions"><g transform="matrix(.51421 0 0 .51421 -340.95 -35.618)"><path d="M724.791 92.905a38.11 38.11 0 0 0-23.143 7.95l-14.86-7.843 7.844 14.86a38.11 38.11 0 0 0-7.951 23.142 38.11 38.11 0 0 0 7.951 23.144l-7.844 14.86 14.86-7.844a38.11 38.11 0 0 0 23.143 7.95 38.11 38.11 0 0 0 23.225-7.907l14.778 7.8-7.8-14.778a38.11 38.11 0 0 0 7.907-23.225c-.034-8.785-3.462-17.143-7.95-23.143l7.843-14.86-14.86 7.845a38.11 38.11 0 0 0-23.143-7.951zm0 11.643c6.812.031 12.646 2.423 17.092 6.222 4.394.045 7.97.928 10.596 2.908l.004.002c2.725 2.028 4.285 5.279 4.753 9.304l.217 1.86-6.707 1.156c.364.147.71.297 1 .455 2.204 1.174 3.929 2.715 5.014 4.629 1.064 1.85 1.596 3.948 1.596 6.172 0 2.6-.702 5.073-2.067 7.273-1.377 2.221-3.35 3.946-5.783 5.084l-.006.002-.006.002c-2.377 1.095-5.226 1.609-8.527 1.644-4.468 3.798-10.341 6.189-17.176 6.22-7.216.034-13.35-2.631-17.888-6.822h-13.58v-39.287h13.67c4.517-4.192 10.607-6.857 17.798-6.824z" fill="#808080"/><g fill="#ffd500"><path d="M724.791 69.268l-3.18 10.289-3.18 10.289h12.72l-3.18-10.29z"/><path d="M786.54 131.009l-10.29-3.177-10.29-3.177.002 6.36.002 6.359 10.288-3.183z"/><path d="M724.784 192.75l3.18-10.29 3.181-10.288h-6.36l-6.359-.001 3.18 10.289z"/><path d="M663.051 131.017l10.29 3.178 10.289 3.179v-6.36l-.002-6.36-10.288 3.182z"/></g><path d="M695.099 113.145h10.45v13.506l10.96-13.506h13.888l-12.32 13.481 12.874 22.258h-12.874l-7.129-14.7-5.398 5.972v8.728h-10.451zm30.799 23.915l9.944-.658q.322 2.56 1.315 3.9 1.615 2.17 4.614 2.17 2.238 0 3.437-1.097 1.223-1.121 1.223-2.584 0-1.39-1.153-2.486-1.154-1.097-5.353-2.073-6.875-1.633-9.805-4.339-2.953-2.706-2.953-6.899 0-2.755 1.5-5.193 1.522-2.462 4.544-3.851 3.046-1.414 8.33-1.414 6.482 0 9.873 2.56 3.415 2.535 4.061 8.093l-9.851.61q-.393-2.414-1.661-3.51-1.246-1.098-3.461-1.098-1.823 0-2.746.829-.922.804-.922 1.975 0 .853.76 1.535.74.707 3.508 1.317 6.852 1.56 9.805 3.169 2.976 1.585 4.314 3.95 1.361 2.364 1.361 5.29 0 3.437-1.8 6.338-1.799 2.9-5.029 4.412-3.23 1.487-8.144 1.487-8.628 0-11.95-3.51-3.323-3.51-3.761-8.923z" fill="#ffffff"/></g></svg>
+    <span class="copyright" id="copyright"></span>
+  </div>
+
+  <button id="settings-button" aria-label="Settings" title="Settings">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
+         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3.2"/>
+      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.08a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.08a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1.03z"/>
+    </svg>
+  </button>
+
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <form id="settings-form" novalidate>
+      <h2 id="settings-title">Settings</h2>
+      <section class="settings-section">
+        <h3>Home location</h3>
+        <div class="settings-fields">
+          <label>Label
+            <input name="home-label" type="text" placeholder="Home" autocomplete="off">
+          </label>
+          <label>Latitude
+            <input name="home-lat" type="text" placeholder="33.5465" autocomplete="off">
+          </label>
+          <label>Longitude
+            <input name="home-lon" type="text" placeholder="-86.5497" autocomplete="off">
+          </label>
+          <label>Time zone
+            <input name="home-tz" type="text" list="tz-options" placeholder="America/Chicago" autocomplete="off">
+          </label>
+        </div>
+      </section>
+      <section class="settings-section settings-locations">
+        <h3>Additional locations</h3>
+        <p class="settings-hint">Up to 4 additional locations, shown alongside home and UTC.</p>
+        <div class="settings-fields location-row">
+          <label>Label <input name="loc-0-label" type="text" autocomplete="off"></label>
+          <label>Latitude <input name="loc-0-lat" type="text" autocomplete="off"></label>
+          <label>Longitude <input name="loc-0-lon" type="text" autocomplete="off"></label>
+          <label>Time zone <input name="loc-0-tz" type="text" list="tz-options" autocomplete="off"></label>
+          <button type="button" class="location-clear" data-row="0" aria-label="Clear location 1">✕</button>
+        </div>
+        <div class="settings-fields location-row">
+          <label>Label <input name="loc-1-label" type="text" autocomplete="off"></label>
+          <label>Latitude <input name="loc-1-lat" type="text" autocomplete="off"></label>
+          <label>Longitude <input name="loc-1-lon" type="text" autocomplete="off"></label>
+          <label>Time zone <input name="loc-1-tz" type="text" list="tz-options" autocomplete="off"></label>
+          <button type="button" class="location-clear" data-row="1" aria-label="Clear location 2">✕</button>
+        </div>
+        <div class="settings-fields location-row">
+          <label>Label <input name="loc-2-label" type="text" autocomplete="off"></label>
+          <label>Latitude <input name="loc-2-lat" type="text" autocomplete="off"></label>
+          <label>Longitude <input name="loc-2-lon" type="text" autocomplete="off"></label>
+          <label>Time zone <input name="loc-2-tz" type="text" list="tz-options" autocomplete="off"></label>
+          <button type="button" class="location-clear" data-row="2" aria-label="Clear location 3">✕</button>
+        </div>
+        <div class="settings-fields location-row">
+          <label>Label <input name="loc-3-label" type="text" autocomplete="off"></label>
+          <label>Latitude <input name="loc-3-lat" type="text" autocomplete="off"></label>
+          <label>Longitude <input name="loc-3-lon" type="text" autocomplete="off"></label>
+          <label>Time zone <input name="loc-3-tz" type="text" list="tz-options" autocomplete="off"></label>
+          <button type="button" class="location-clear" data-row="3" aria-label="Clear location 4">✕</button>
+        </div>
+      </section>
+      <fieldset class="settings-section settings-mode">
+        <legend>Map centering</legend>
+        <label class="mode-option">
+          <input type="radio" name="map-mode" value="home" checked>
+          Home-centered
+        </label>
+        <label class="mode-option">
+          <input type="radio" name="map-mode" value="sun">
+          Sun-centered
+        </label>
+      </fieldset>
+      <p id="settings-error" role="alert" hidden></p>
+      <div class="settings-actions">
+        <button type="button" id="settings-cancel">Cancel</button>
+        <button type="submit" id="settings-save">Save</button>
+      </div>
+    </form>
+    <datalist id="tz-options"></datalist>
+  </dialog>
+
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

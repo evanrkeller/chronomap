@@ -4,12 +4,12 @@ import { lonToX, latToY } from './geo.js';
 // like UTC are scoreboard-only). Outlined so it reads over both bright
 // daylight and dark ocean. dotRadius arrives pre-scaled to canvas
 // pixels so dots look the same size at every resolution.
-export function drawMarkers(context, cities, mapWidth, mapHeight, dotRadius = 8) {
+export function drawMarkers(context, cities, mapWidth, mapHeight, centerLongitude, dotRadius = 8) {
   context.clearRect(0, 0, mapWidth, mapHeight);
 
   for (const city of cities) {
     if (typeof city.lat !== 'number' || typeof city.lon !== 'number') continue;
-    const x = lonToX(city.lon, mapWidth);
+    const x = lonToX(city.lon, mapWidth, centerLongitude);
     const y = latToY(city.lat, mapHeight);
 
     context.beginPath();

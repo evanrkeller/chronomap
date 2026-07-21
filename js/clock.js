@@ -43,3 +43,9 @@ export function localDateKey(date, timeZone) {
   }
   return formatter.format(date);
 }
+
+// Attribution line for the corner badge. Derived from the clock so the
+// year rolls over on its own — the kiosk's daily reload picks it up.
+export function copyrightNotice(date = new Date()) {
+  return `© ${date.getFullYear()} Keller Solutions`;
+}
