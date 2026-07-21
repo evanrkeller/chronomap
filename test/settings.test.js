@@ -6,6 +6,7 @@ import {
   loadSettings,
   saveSettings,
   effectiveCities,
+  mapMode,
 } from '../js/settings.js';
 
 const DEFAULTS = [
@@ -101,6 +102,27 @@ test('a home with no label is called Home', () => {
     home: { lat: 51.5, lon: -0.13, tz: 'Europe/London' },
   });
   assert.equal(cities.find((city) => city.home).name, 'Home');
+});
+
+test('map mode defaults to home-centered', () => {
+  assert.equal(mapMode(null), 'home');
+  assert.equal(mapMode({}), 'home');
+});
+
+test('map mode honors a stored sun-centered choice', () => {
+  assert.equal(mapMode({ mode: 'sun' }), 'sun');
+  assert.equal(mapMode({ mode: 'home' }), 'home');
+});
+
+test('an unrecognized stored mode falls back to home-centered', () => {
+  assert.equal(mapMode({ mode: 'martian' }), 'home');
+  assert.equal(mapMode({ mode: 42 }), 'home');
+});
+
+test('mode survives a storage round-trip alongside home', () => {
+  const storage = fakeStorage();
+  saveSettings(storage, { mode: 'sun', home: { label: 'X', lat: 1, lon: 2, tz: 'UTC' } });
+  assert.equal(mapMode(loadSettings(storage)), 'sun');
 });
 
 test('an invalid stored home is ignored, defaults stand', () => {

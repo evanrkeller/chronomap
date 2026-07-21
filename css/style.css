@@ -221,6 +221,34 @@ body {
   outline-offset: 1px;
 }
 
+.settings-mode {
+  margin-top: 20px;
+  border: none;
+}
+
+.settings-mode legend {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffd500;
+  margin-bottom: 12px;
+}
+
+.mode-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 24px;
+  font-size: 0.9rem;
+  color: #d5dce4;
+  cursor: pointer;
+}
+
+.mode-option input {
+  accent-color: #ffd500;
+}
+
 #settings-error {
   margin-top: 14px;
   font-size: 0.85rem;

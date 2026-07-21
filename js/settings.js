@@ -51,6 +51,13 @@ export function saveSettings(storage, settings) {
   storage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
+// Map centering mode: the map keeps home mid-screen ('home') or keeps
+// the subsolar longitude mid-screen so the imagery rolls beneath a
+// fixed day-night outline ('sun'). Anything unrecognized means home.
+export function mapMode(settings) {
+  return settings?.mode === 'sun' ? 'sun' : 'home';
+}
+
 // The city list the display actually renders: the built-in defaults
 // with any valid user home swapped in for the default home entry.
 export function effectiveCities(defaults, settings) {

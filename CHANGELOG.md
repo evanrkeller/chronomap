@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   the default home on the scoreboard with a yellow label, and persists
   in localStorage — corrupt or invalid stored settings fall back to the
   built-in defaults (#26)
+- Map centering toggle in settings: home-centered (default) keeps home
+  mid-screen; sun-centered keeps the subsolar longitude mid-screen so
+  the imagery rolls beneath a fixed day-night outline (#27)
 
 ### Changed
 

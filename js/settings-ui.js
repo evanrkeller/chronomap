@@ -1,7 +1,7 @@
 // Gear button + settings dialog. All persistence goes through
 // js/settings.js; this module only moves values between the form and
 // storage and tells main.js when something changed.
-import { validateLocation, loadSettings, saveSettings } from './settings.js';
+import { validateLocation, loadSettings, saveSettings, mapMode } from './settings.js';
 
 function populateTimeZoneOptions(datalist) {
   if (typeof Intl.supportedValuesOf !== 'function') return;
@@ -28,6 +28,7 @@ function fillForm(form, settings) {
   form.elements['home-lat'].value = home.lat ?? '';
   form.elements['home-lon'].value = home.lon ?? '';
   form.elements['home-tz'].value = home.tz ?? '';
+  form.elements['map-mode'].value = mapMode(settings);
 }
 
 export function initSettingsUi({ storage, onChange }) {
@@ -66,6 +67,7 @@ export function initSettingsUi({ storage, onChange }) {
       }
       settings.home = home;
     }
+    settings.mode = form.elements['map-mode'].value;
     saveSettings(storage, settings);
     dialog.close();
     onChange();

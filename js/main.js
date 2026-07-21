@@ -7,7 +7,7 @@ import { nightAlpha, dayPart, civilTwilightCircle } from './terminator.js';
 import { drawMarkers } from './markers.js';
 import { formatCityTime, localDateKey } from './clock.js';
 import { scheduleDailyReload } from './kiosk.js';
-import { loadSettings, effectiveCities } from './settings.js';
+import { loadSettings, effectiveCities, mapMode } from './settings.js';
 import { initSettingsUi } from './settings-ui.js';
 
 const UPDATE_INTERVAL_MS = 60000;
@@ -39,15 +39,25 @@ const images = { day: null, night: null, moonFull: null, moonNew: null };
 let defaultCities = [];
 let cities = [];
 
-// Longitude at the horizontal center of the display: the user's home
-// when one is configured, otherwise the assets' built-in Leeds center.
+// Longitude at the horizontal center of the display. In home-centered
+// mode this is the home longitude; in sun-centered mode render() moves
+// it to the subsolar longitude each tick so the imagery rolls beneath
+// a visually fixed day-night outline.
 let centerLon = ASSET_CENTER_LONGITUDE;
 
-// Re-derives the rendered city list and map center from storage.
+// Home longitude — the stable anchor the scoreboard order always uses,
+// so tiles never reshuffle as the sun-centered map drifts.
+let homeLon = ASSET_CENTER_LONGITUDE;
+let mode = 'home';
+
+// Re-derives the rendered city list, mode, and map center from storage.
 function applySettings() {
-  cities = effectiveCities(defaultCities, loadSettings(window.localStorage));
+  const settings = loadSettings(window.localStorage);
+  cities = effectiveCities(defaultCities, settings);
+  mode = mapMode(settings);
   const home = cities.find((city) => city.home) ?? cities[0];
-  centerLon = typeof home?.lon === 'number' ? home.lon : ASSET_CENTER_LONGITUDE;
+  homeLon = typeof home?.lon === 'number' ? home.lon : ASSET_CENTER_LONGITUDE;
+  centerLon = homeLon;
 }
 
 // Canvas pixels per CSS pixel for the current layout.
@@ -226,6 +236,7 @@ function render() {
   // Breadcrumb for remote debugging on the kiosk (chrome://inspect).
   console.log(`chronomap redraw ${now.toISOString()}`);
   const subsolar = subsolarPoint(now);
+  if (mode === 'sun') centerLon = subsolar.longitude;
   renderMask(subsolar);
 
   // Night imagery, masked down to where the sun is below the horizon.
@@ -251,6 +262,10 @@ function render() {
     latToY(moon.latitude, mapCanvas.height),
     moonPhase(now),
   );
+
+  // Markers follow the same center, which drifts each tick in
+  // sun-centered mode — redraw them with every frame.
+  renderMarkers();
 }
 
 function renderMarkers() {
@@ -282,7 +297,7 @@ function buildScoreboard() {
   // Cards run west→east in the same order the markers appear on the
   // map; UTC (no coordinates) slots in at the Greenwich meridian.
   const ordered = [...cities].sort(
-    (a, b) => mapOrder(a.lon ?? 0, centerLon) - mapOrder(b.lon ?? 0, centerLon),
+    (a, b) => mapOrder(a.lon ?? 0, homeLon) - mapOrder(b.lon ?? 0, homeLon),
   );
 
   const tiles = ordered.map((city) => {
@@ -337,10 +352,7 @@ let resizeTimer = null;
 function handleResize() {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
-    if (layout()) {
-      renderMarkers();
-      render();
-    }
+    if (layout()) render();
   }, 150);
 }
 
@@ -357,7 +369,6 @@ async function start() {
   applySettings();
 
   layout();
-  renderMarkers();
   scheduleUpdates();
   scheduleDailyReload();
   buildScoreboard();
@@ -367,7 +378,6 @@ async function start() {
     storage: window.localStorage,
     onChange: () => {
       applySettings();
-      renderMarkers();
       render();
       buildScoreboard();
     },
