@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Day imagery gets brighter, more saturated blues so daylit ocean reads
+  clearly against the night side from across a room (#17)
+
 ### Added
 
 - Kiosk hardening: daily self-reload at 3:00 AM local, hidden cursor,

@@ -40,16 +40,19 @@ fetch() {
 
 process() {
   local raw="$1" out="$2"
+  shift 2
   local width roll
   width=$(magick identify -format "%w" "$raw")
   roll=$(awk "BEGIN { printf \"%d\", $width * $ROLL_FRACTION + 0.5 }")
   echo "processing $raw (width $width, roll -$roll) -> $out"
-  magick "$raw" -roll -"$roll"+0 -resize 2048x1024\! -strip -quality 88 "$out"
+  magick "$raw" -roll -"$roll"+0 -resize 2048x1024\! "$@" -strip -quality 88 "$out"
 }
 
 fetch "$DAY_URL" "$RAW_DIR/blue-marble-day.jpg"
 fetch "$NIGHT_URL" "$RAW_DIR/earth-at-night.jpg"
-process "$RAW_DIR/blue-marble-day.jpg" "$OUT_DIR/earth-day.jpg"
+# Day gets brighter, more saturated blues so daylit ocean reads clearly
+# against the near-black night side from across a room.
+process "$RAW_DIR/blue-marble-day.jpg" "$OUT_DIR/earth-day.jpg" -modulate 110,142,100
 process "$RAW_DIR/earth-at-night.jpg" "$OUT_DIR/earth-night.jpg"
 
 echo "done:"
