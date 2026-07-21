@@ -1,7 +1,9 @@
 // Gear button + settings dialog. All persistence goes through
 // js/settings.js; this module only moves values between the form and
 // storage and tells main.js when something changed.
-import { validateLocation, loadSettings, saveSettings, mapMode } from './settings.js';
+import {
+  validateLocation, loadSettings, saveSettings, mapMode, MAX_ADDITIONAL_LOCATIONS,
+} from './settings.js';
 
 function populateTimeZoneOptions(datalist) {
   if (typeof Intl.supportedValuesOf !== 'function') return;
@@ -12,22 +14,33 @@ function populateTimeZoneOptions(datalist) {
   }
 }
 
-function readHomeFromForm(form) {
-  const value = (name) => form.elements[name].value.trim();
+function readLocation(form, prefix) {
+  const value = (name) => form.elements[`${prefix}-${name}`].value.trim();
   return {
-    label: value('home-label'),
-    lat: value('home-lat') === '' ? NaN : Number(value('home-lat')),
-    lon: value('home-lon') === '' ? NaN : Number(value('home-lon')),
-    tz: value('home-tz'),
+    label: value('label'),
+    lat: value('lat') === '' ? NaN : Number(value('lat')),
+    lon: value('lon') === '' ? NaN : Number(value('lon')),
+    tz: value('tz'),
   };
 }
 
+function isBlank(location) {
+  return location.label === '' && Number.isNaN(location.lat)
+    && Number.isNaN(location.lon) && location.tz === '';
+}
+
+function fillLocation(form, prefix, location) {
+  form.elements[`${prefix}-label`].value = location?.label ?? '';
+  form.elements[`${prefix}-lat`].value = location?.lat ?? '';
+  form.elements[`${prefix}-lon`].value = location?.lon ?? '';
+  form.elements[`${prefix}-tz`].value = location?.tz ?? '';
+}
+
 function fillForm(form, settings) {
-  const home = settings?.home ?? {};
-  form.elements['home-label'].value = home.label ?? '';
-  form.elements['home-lat'].value = home.lat ?? '';
-  form.elements['home-lon'].value = home.lon ?? '';
-  form.elements['home-tz'].value = home.tz ?? '';
+  fillLocation(form, 'home', settings?.home);
+  for (let row = 0; row < MAX_ADDITIONAL_LOCATIONS; row += 1) {
+    fillLocation(form, `loc-${row}`, settings?.locations?.[row]);
+  }
   form.elements['map-mode'].value = mapMode(settings);
 }
 
@@ -49,24 +62,45 @@ export function initSettingsUi({ storage, onChange }) {
     dialog.close();
   });
 
+  for (const clear of form.querySelectorAll('.location-clear')) {
+    clear.addEventListener('click', () => {
+      fillLocation(form, `loc-${clear.dataset.row}`, null);
+    });
+  }
+
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-    const home = readHomeFromForm(form);
-    const cleared = home.label === '' && Number.isNaN(home.lat)
-      && Number.isNaN(home.lon) && home.tz === '';
-
     const settings = loadSettings(storage) ?? {};
-    if (cleared) {
+    const problems = [];
+
+    const home = readLocation(form, 'home');
+    if (isBlank(home)) {
       delete settings.home;
     } else {
-      const problems = validateLocation(home);
-      if (problems.length > 0) {
-        error.textContent = problems.join(' ');
-        error.hidden = false;
-        return;
-      }
+      problems.push(...validateLocation(home).map((p) => `Home: ${p}`));
       settings.home = home;
     }
+
+    const locations = [];
+    for (let row = 0; row < MAX_ADDITIONAL_LOCATIONS; row += 1) {
+      const location = readLocation(form, `loc-${row}`);
+      if (isBlank(location)) continue;
+      problems.push(...validateLocation(location).map((p) => `Location ${row + 1}: ${p}`));
+      locations.push(location);
+    }
+    // Rows left blank by someone who never curated a list keep the
+    // default cities; an emptied previously-curated list means "just
+    // home and UTC".
+    if (locations.length > 0 || Array.isArray(settings.locations)) {
+      settings.locations = locations;
+    }
+
+    if (problems.length > 0) {
+      error.textContent = problems.join(' ');
+      error.hidden = false;
+      return;
+    }
+
     settings.mode = form.elements['map-mode'].value;
     saveSettings(storage, settings);
     dialog.close();

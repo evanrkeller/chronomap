@@ -16,6 +16,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Map centering toggle in settings: home-centered (default) keeps home
   mid-screen; sun-centered keeps the subsolar longitude mid-screen so
   the imagery rolls beneath a fixed day-night outline (#27)
+- Up to four additional locations in settings, each with label,
+  coordinates, and timezone — home + UTC + the additions give at most
+  six scoreboard tiles and map markers; a curated list replaces the
+  default city set, and clearing it back to nothing restores the
+  defaults (#28)
 
 ### Changed
 

@@ -7,6 +7,7 @@ import {
   saveSettings,
   effectiveCities,
   mapMode,
+  MAX_ADDITIONAL_LOCATIONS,
 } from '../js/settings.js';
 
 const DEFAULTS = [
@@ -102,6 +103,74 @@ test('a home with no label is called Home', () => {
     home: { lat: 51.5, lon: -0.13, tz: 'Europe/London' },
   });
   assert.equal(cities.find((city) => city.home).name, 'Home');
+});
+
+test('four additional locations are allowed', () => {
+  assert.equal(MAX_ADDITIONAL_LOCATIONS, 4);
+});
+
+test('curated locations replace the default non-home cities', () => {
+  const cities = effectiveCities(DEFAULTS, {
+    locations: [
+      { label: 'Tokyo', lat: 35.6762, lon: 139.6503, tz: 'Asia/Tokyo' },
+      { label: 'Lima', lat: -12.0464, lon: -77.0428, tz: 'America/Lima' },
+    ],
+  });
+  const names = cities.map((city) => city.name);
+  assert.ok(names.includes('Leeds'), 'default home kept');
+  assert.ok(names.includes('UTC'), 'UTC always present');
+  assert.ok(names.includes('Tokyo') && names.includes('Lima'));
+  assert.ok(!names.includes('Brisbane'), 'default extras replaced');
+  assert.equal(cities.length, 4);
+});
+
+test('home, UTC, and four locations make six scoreboard entries', () => {
+  const cities = effectiveCities(DEFAULTS, {
+    home: { label: 'HQ', lat: 40, lon: -74, tz: 'America/New_York' },
+    locations: [
+      { label: 'A', lat: 1, lon: 1, tz: 'UTC' },
+      { label: 'B', lat: 2, lon: 2, tz: 'UTC' },
+      { label: 'C', lat: 3, lon: 3, tz: 'UTC' },
+      { label: 'D', lat: 4, lon: 4, tz: 'UTC' },
+    ],
+  });
+  assert.equal(cities.length, 6);
+  assert.equal(cities.filter((city) => city.home).length, 1);
+});
+
+test('stored locations beyond the limit are capped at four', () => {
+  const extra = Array.from({ length: 7 }, (_, i) => (
+    { label: `L${i}`, lat: i, lon: i, tz: 'UTC' }
+  ));
+  const cities = effectiveCities(DEFAULTS, { locations: extra });
+  assert.equal(cities.length, 2 + MAX_ADDITIONAL_LOCATIONS);
+});
+
+test('invalid stored locations are dropped, not fatal', () => {
+  const cities = effectiveCities(DEFAULTS, {
+    locations: [
+      { label: 'Good', lat: 10, lon: 10, tz: 'UTC' },
+      { label: 'Bad', lat: 999, lon: 10, tz: 'UTC' },
+      'not even an object',
+    ],
+  });
+  const names = cities.map((city) => city.name);
+  assert.ok(names.includes('Good'));
+  assert.ok(!names.includes('Bad'));
+  assert.equal(cities.length, 3);
+});
+
+test('an empty curated list leaves just home and UTC', () => {
+  const cities = effectiveCities(DEFAULTS, { locations: [] });
+  assert.deepEqual(cities.map((city) => city.name).sort(), ['Leeds', 'UTC']);
+});
+
+test('a location with no label gets a coordinate name', () => {
+  const cities = effectiveCities(DEFAULTS, {
+    locations: [{ lat: 35.6762, lon: 139.6503, tz: 'Asia/Tokyo' }],
+  });
+  const added = cities.find((city) => city.tz === 'Asia/Tokyo');
+  assert.ok(added.name.length > 0, 'has some display name');
 });
 
 test('map mode defaults to home-centered', () => {

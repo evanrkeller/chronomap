@@ -6,6 +6,8 @@ export const SETTINGS_KEY = 'chronomap.settings.v1';
 
 const DEFAULT_HOME_LABEL = 'Home';
 
+export const MAX_ADDITIONAL_LOCATIONS = 4;
+
 function isFiniteNumber(value) {
   return typeof value === 'number' && Number.isFinite(value);
 }
@@ -58,19 +60,48 @@ export function mapMode(settings) {
   return settings?.mode === 'sun' ? 'sun' : 'home';
 }
 
-// The city list the display actually renders: the built-in defaults
-// with any valid user home swapped in for the default home entry.
-export function effectiveCities(defaults, settings) {
-  const home = settings?.home;
-  if (!home || validateLocation(home).length > 0) return defaults;
-  const userHome = {
-    name: typeof home.label === 'string' && home.label.trim() !== ''
-      ? home.label.trim()
-      : DEFAULT_HOME_LABEL,
-    lat: home.lat,
-    lon: home.lon,
-    tz: home.tz,
-    home: true,
+function displayName(location, fallback) {
+  return typeof location.label === 'string' && location.label.trim() !== ''
+    ? location.label.trim()
+    : fallback;
+}
+
+function asCity(location, fallback, home = false) {
+  const city = {
+    name: displayName(location, fallback),
+    lat: location.lat,
+    lon: location.lon,
+    tz: location.tz,
   };
-  return defaults.map((city) => (city.home ? userHome : city));
+  if (home) city.home = true;
+  return city;
+}
+
+// The city list the display actually renders. The built-in defaults
+// stand until the user configures something: a valid stored home
+// replaces the default home entry, and once a curated `locations` list
+// exists it replaces the default extras entirely — home and UTC are
+// always kept, giving at most six scoreboard entries.
+export function effectiveCities(defaults, settings) {
+  const storedHome = settings?.home;
+  const homeIsValid = storedHome && validateLocation(storedHome).length === 0;
+  const homeCity = homeIsValid
+    ? asCity(storedHome, DEFAULT_HOME_LABEL, true)
+    : defaults.find((city) => city.home);
+
+  if (!Array.isArray(settings?.locations)) {
+    return homeIsValid
+      ? defaults.map((city) => (city.home ? homeCity : city))
+      : defaults;
+  }
+
+  const utc = defaults.find((city) => city.lat === undefined && city.lon === undefined)
+    ?? { name: 'UTC', tz: 'UTC' };
+  const extras = settings.locations
+    .filter((location) => location && typeof location === 'object'
+      && validateLocation(location).length === 0)
+    .slice(0, MAX_ADDITIONAL_LOCATIONS)
+    .map((location) => asCity(location, `${location.lat}, ${location.lon}`));
+
+  return [homeCity, utc, ...extras].filter(Boolean);
 }

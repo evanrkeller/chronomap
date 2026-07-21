@@ -44,6 +44,38 @@
           </label>
         </div>
       </section>
+      <section class="settings-section settings-locations">
+        <h3>Additional locations</h3>
+        <p class="settings-hint">Up to 4 additional locations, shown alongside home and UTC.</p>
+        <div class="settings-fields location-row">
+          <label>Label <input name="loc-0-label" type="text" autocomplete="off"></label>
+          <label>Latitude <input name="loc-0-lat" type="text" inputmode="decimal" autocomplete="off"></label>
+          <label>Longitude <input name="loc-0-lon" type="text" inputmode="decimal" autocomplete="off"></label>
+          <label>Time zone <input name="loc-0-tz" type="text" list="tz-options" autocomplete="off"></label>
+          <button type="button" class="location-clear" data-row="0" aria-label="Clear location 1">✕</button>
+        </div>
+        <div class="settings-fields location-row">
+          <label>Label <input name="loc-1-label" type="text" autocomplete="off"></label>
+          <label>Latitude <input name="loc-1-lat" type="text" inputmode="decimal" autocomplete="off"></label>
+          <label>Longitude <input name="loc-1-lon" type="text" inputmode="decimal" autocomplete="off"></label>
+          <label>Time zone <input name="loc-1-tz" type="text" list="tz-options" autocomplete="off"></label>
+          <button type="button" class="location-clear" data-row="1" aria-label="Clear location 2">✕</button>
+        </div>
+        <div class="settings-fields location-row">
+          <label>Label <input name="loc-2-label" type="text" autocomplete="off"></label>
+          <label>Latitude <input name="loc-2-lat" type="text" inputmode="decimal" autocomplete="off"></label>
+          <label>Longitude <input name="loc-2-lon" type="text" inputmode="decimal" autocomplete="off"></label>
+          <label>Time zone <input name="loc-2-tz" type="text" list="tz-options" autocomplete="off"></label>
+          <button type="button" class="location-clear" data-row="2" aria-label="Clear location 3">✕</button>
+        </div>
+        <div class="settings-fields location-row">
+          <label>Label <input name="loc-3-label" type="text" autocomplete="off"></label>
+          <label>Latitude <input name="loc-3-lat" type="text" inputmode="decimal" autocomplete="off"></label>
+          <label>Longitude <input name="loc-3-lon" type="text" inputmode="decimal" autocomplete="off"></label>
+          <label>Time zone <input name="loc-3-tz" type="text" list="tz-options" autocomplete="off"></label>
+          <button type="button" class="location-clear" data-row="3" aria-label="Clear location 4">✕</button>
+        </div>
+      </section>
       <fieldset class="settings-section settings-mode">
         <legend>Map centering</legend>
         <label class="mode-option">

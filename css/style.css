@@ -158,7 +158,9 @@ body {
 
 #settings-dialog {
   margin: auto;
-  min-width: min(420px, 90vw);
+  min-width: min(680px, 92vw);
+  max-height: 90vh;
+  overflow-y: auto;
   padding: 28px 32px;
   border: 1px solid rgba(154, 167, 181, 0.35);
   border-radius: 12px;
@@ -219,6 +221,37 @@ body {
 .settings-fields input:focus {
   outline: 2px solid #ffd500;
   outline-offset: 1px;
+}
+
+.settings-hint {
+  font-size: 0.78rem;
+  color: #9aa7b5;
+  margin-bottom: 12px;
+}
+
+.settings-locations {
+  margin-top: 24px;
+}
+
+.location-row {
+  grid-template-columns: 1.2fr 1fr 1fr 1.4fr auto;
+  align-items: end;
+  margin-bottom: 10px;
+}
+
+.location-clear {
+  height: 36px;
+  width: 36px;
+  border: 1px solid rgba(154, 167, 181, 0.35);
+  border-radius: 6px;
+  background: transparent;
+  color: #9aa7b5;
+  cursor: pointer;
+}
+
+.location-clear:hover {
+  color: #ff8a80;
+  border-color: #ff8a80;
 }
 
 .settings-mode {
