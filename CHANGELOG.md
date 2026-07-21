@@ -53,9 +53,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   it uncropped, shorter windows crop up to 10% off the top and bottom,
   and beyond that the map stretches vertically to fit (#25)
 
-- Initial city set is now Brisbane, Leeds (home), Cincinnati, Istanbul,
-  and New Delhi, plus a UTC card; scoreboard cards order themselves
-  west→east to match marker positions on the map (#19)
+- Scoreboard cards order themselves west→east to match marker
+  positions on the map (#19; the curated initial city set that
+  shipped with this change was later replaced by the home + UTC
+  defaults, #37)
 
 - City markers are now plain outlined dots — no text labels (#18)
 - Day imagery gets brighter, more saturated blues so daylit ocean reads
