@@ -114,6 +114,11 @@ function clearLookupResults(form) {
   for (const results of form.querySelectorAll('.lookup-results')) {
     results.replaceChildren();
   }
+  // A lookup abandoned mid-flight (dialog closed while a request hung)
+  // must not leave its Find button stuck disabled on reopen.
+  for (const find of form.querySelectorAll('.location-find')) {
+    find.disabled = false;
+  }
 }
 
 export function initSettingsUi({ storage, onChange }) {

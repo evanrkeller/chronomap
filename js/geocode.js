@@ -42,15 +42,20 @@ export function parseGeocodeResults(json) {
 }
 
 // A stalled connection must fail into the dialog's retry message, not
-// pin the row on "Searching…" forever — older kiosk Chromium without
-// AbortSignal.timeout just goes without the guard.
+// pin the row on "Searching…" forever. AbortController has been in
+// Chromium far longer than AbortSignal.timeout, so older kiosk builds
+// get a hand-rolled equivalent.
 const LOOKUP_TIMEOUT_MS = 10000;
 
+function timeoutSignal(ms) {
+  if (typeof AbortSignal.timeout === 'function') return AbortSignal.timeout(ms);
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
 export async function lookupPlace(query, fetchFn = fetch) {
-  const signal = typeof AbortSignal.timeout === 'function'
-    ? AbortSignal.timeout(LOOKUP_TIMEOUT_MS)
-    : undefined;
-  const response = await fetchFn(geocodeUrl(query), { signal });
+  const response = await fetchFn(geocodeUrl(query), { signal: timeoutSignal(LOOKUP_TIMEOUT_MS) });
   if (!response.ok) throw new Error(`geocoding failed: ${response.status}`);
   return parseGeocodeResults(await response.json());
 }
