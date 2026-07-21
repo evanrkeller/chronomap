@@ -77,17 +77,40 @@ function asCity(location, fallback, home = false) {
   return city;
 }
 
+// A geolocation fix plus the browser's own timezone, shaped like a
+// stored home. Null when the position is unusable — the caller just
+// keeps the defaults.
+export function detectedHomeFromPosition(position, timeZone) {
+  const home = {
+    label: DEFAULT_HOME_LABEL,
+    lat: roundCoordinate(position?.coords?.latitude),
+    lon: roundCoordinate(position?.coords?.longitude),
+    tz: timeZone,
+  };
+  return validateLocation(home).length === 0 ? home : null;
+}
+
+// Four decimal places (~11 m) — far below the map's ~50 km pixels.
+function roundCoordinate(value) {
+  return typeof value === 'number' ? Math.round(value * 10000) / 10000 : NaN;
+}
+
 // The city list the display actually renders. The built-in defaults
-// stand until the user configures something: a valid stored home
-// replaces the default home entry, and once a curated `locations` list
+// stand until something better exists: a valid stored home wins,
+// otherwise a detected home (in-memory only, never persisted) stands
+// in for the default home entry. Once a curated `locations` list
 // exists it replaces the default extras entirely — home and UTC are
 // always kept, giving at most six scoreboard entries.
-export function effectiveCities(defaults, settings) {
+export function effectiveCities(defaults, settings, detectedHome = null) {
   const storedHome = settings?.home;
-  const homeIsValid = storedHome && validateLocation(storedHome).length === 0;
-  const homeCity = homeIsValid
+  const storedHomeIsValid = storedHome && validateLocation(storedHome).length === 0;
+  const detectedIsValid = detectedHome && validateLocation(detectedHome).length === 0;
+  const homeIsValid = storedHomeIsValid || detectedIsValid;
+  const homeCity = storedHomeIsValid
     ? asCity(storedHome, DEFAULT_HOME_LABEL, true)
-    : defaults.find((city) => city.home);
+    : (detectedIsValid
+      ? asCity(detectedHome, DEFAULT_HOME_LABEL, true)
+      : defaults.find((city) => city.home));
 
   if (!Array.isArray(settings?.locations)) {
     return homeIsValid

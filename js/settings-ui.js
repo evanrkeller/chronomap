@@ -4,6 +4,7 @@
 import {
   validateLocation, loadSettings, saveSettings, mapMode, MAX_ADDITIONAL_LOCATIONS,
 } from './settings.js';
+import { lookupPlace } from './geocode.js';
 
 function populateTimeZoneOptions(datalist) {
   if (typeof Intl.supportedValuesOf !== 'function') return;
@@ -51,6 +52,75 @@ function fillForm(form, settings) {
   form.elements['map-mode'].value = mapMode(settings);
 }
 
+// Bumped whenever the results areas are wiped (dialog open/close), so
+// a lookup that resolves after the user abandoned it can't inject
+// stale candidates into a freshly reset form.
+let lookupEpoch = 0;
+
+// A Find button searches the row's Label text and offers the matches;
+// picking one fills the row. Requests happen only here, on demand —
+// the display itself never talks to the geocoder.
+function initLookup(form) {
+  for (const find of form.querySelectorAll('.location-find')) {
+    const prefix = find.dataset.prefix;
+    const results = form.querySelector(`.lookup-results[data-prefix="${prefix}"]`);
+
+    find.addEventListener('click', async () => {
+      const query = form.elements[`${prefix}-label`].value.trim();
+      if (query === '') {
+        results.textContent = 'Type a place name in Label first.';
+        form.elements[`${prefix}-label`].focus();
+        return;
+      }
+      const epoch = lookupEpoch;
+      find.disabled = true;
+      results.textContent = 'Searching…';
+      try {
+        const candidates = await lookupPlace(query);
+        if (epoch !== lookupEpoch) return;
+        results.replaceChildren();
+        if (candidates.length === 0) {
+          results.textContent = 'No places found.';
+          return;
+        }
+        for (const candidate of candidates) {
+          const pick = document.createElement('button');
+          pick.type = 'button';
+          pick.className = 'lookup-candidate';
+          pick.textContent = candidate.description
+            ? `${candidate.label} — ${candidate.description}`
+            : candidate.label;
+          pick.addEventListener('click', () => {
+            fillLocation(form, prefix, candidate);
+            results.replaceChildren();
+            // The picked button just vanished — hand focus back to the
+            // row's Find button so keyboard flow stays in place.
+            find.focus();
+          });
+          results.append(pick);
+        }
+      } catch {
+        if (epoch !== lookupEpoch) return;
+        results.textContent = 'Lookup failed — try again, or enter coordinates manually.';
+      } finally {
+        find.disabled = false;
+      }
+    });
+  }
+}
+
+function clearLookupResults(form) {
+  lookupEpoch += 1;
+  for (const results of form.querySelectorAll('.lookup-results')) {
+    results.replaceChildren();
+  }
+  // A lookup abandoned mid-flight (dialog closed while a request hung)
+  // must not leave its Find button stuck disabled on reopen.
+  for (const find of form.querySelectorAll('.location-find')) {
+    find.disabled = false;
+  }
+}
+
 export function initSettingsUi({ storage, onChange }) {
   const button = document.getElementById('settings-button');
   const dialog = document.getElementById('settings-dialog');
@@ -61,9 +131,15 @@ export function initSettingsUi({ storage, onChange }) {
 
   button.addEventListener('click', () => {
     fillForm(form, loadSettings(storage));
+    clearLookupResults(form);
     error.hidden = true;
     dialog.showModal();
   });
+
+  // Esc (native cancel) also abandons any in-flight lookups.
+  dialog.addEventListener('close', () => clearLookupResults(form));
+
+  initLookup(form);
 
   document.getElementById('settings-cancel').addEventListener('click', () => {
     dialog.close();

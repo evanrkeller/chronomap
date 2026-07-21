@@ -24,9 +24,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Keller Solutions attribution badge in the bottom-left corner — the
   RampScope logo mark plus a copyright line whose year updates itself
   (#29)
+- Find button on every location row: searches the label text against
+  the free, keyless Open-Meteo geocoder and fills latitude, longitude,
+  and timezone from the picked match — requests happen only when the
+  user searches, so the display stays fully static (#33)
+- First-visit auto-home: with no home configured, the browser asks for
+  the visitor's location and the map recenters on it (browser timezone,
+  in-memory only — never stored or sent anywhere); denial or failure
+  keeps the defaults, and a configured home always wins without any
+  prompt (#35)
 
 ### Changed
 
+- A brand-new visitor now sees only two scoreboard tiles — home and
+  UTC. Home is their detected location, or Birmingham, AL when
+  detection is denied or unavailable; the old pre-populated city set
+  (Brisbane, Leeds, Cincinnati, Istanbul, New Delhi) is gone, and
+  extra cities appear only when added in settings (#37)
 - Map centering moved from asset time to render time: the projection
   takes a center meridian and the pre-rolled imagery is drawn with a
   wrapped offset, so any longitude can sit mid-screen (#26)
@@ -39,9 +53,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   it uncropped, shorter windows crop up to 10% off the top and bottom,
   and beyond that the map stretches vertically to fit (#25)
 
-- Initial city set is now Brisbane, Leeds (home), Cincinnati, Istanbul,
-  and New Delhi, plus a UTC card; scoreboard cards order themselves
-  west→east to match marker positions on the map (#19)
+- Scoreboard cards order themselves west→east to match marker
+  positions on the map (#19; the curated initial city set that
+  shipped with this change was later replaced by the home + UTC
+  defaults, #37)
 
 - City markers are now plain outlined dots — no text labels (#18)
 - Day imagery gets brighter, more saturated blues so daylit ocean reads

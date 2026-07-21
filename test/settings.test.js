@@ -8,6 +8,7 @@ import {
   effectiveCities,
   mapMode,
   MAX_ADDITIONAL_LOCATIONS,
+  detectedHomeFromPosition,
 } from '../js/settings.js';
 
 const DEFAULTS = [
@@ -171,6 +172,58 @@ test('a location with no label gets a coordinate name', () => {
   });
   const added = cities.find((city) => city.tz === 'Asia/Tokyo');
   assert.ok(added.name.length > 0, 'has some display name');
+});
+
+const DETECTED = { label: 'Home', lat: 41.8781, lon: -87.6298, tz: 'America/Chicago' };
+
+test('a detected home stands in for the default home', () => {
+  const cities = effectiveCities(DEFAULTS, null, DETECTED);
+  const home = cities.find((city) => city.home);
+  assert.equal(home.name, 'Home');
+  assert.equal(home.lat, 41.8781);
+  assert.ok(cities.some((city) => city.name === 'Brisbane'), 'other defaults kept');
+  assert.ok(!cities.some((city) => city.name === 'Leeds'), 'default home replaced');
+});
+
+test('a configured home always beats the detected one', () => {
+  const cities = effectiveCities(
+    DEFAULTS,
+    { home: { label: 'HQ', lat: 40.7, lon: -74, tz: 'America/New_York' } },
+    DETECTED,
+  );
+  assert.equal(cities.find((city) => city.home).name, 'HQ');
+});
+
+test('a detected home combines with curated locations', () => {
+  const cities = effectiveCities(
+    DEFAULTS,
+    { locations: [{ label: 'Tokyo', lat: 35.6762, lon: 139.6503, tz: 'Asia/Tokyo' }] },
+    DETECTED,
+  );
+  assert.deepEqual(
+    cities.map((city) => city.name).sort(),
+    ['Home', 'Tokyo', 'UTC'],
+  );
+  assert.equal(cities.find((city) => city.home).lat, 41.8781);
+});
+
+test('an invalid detected home is ignored', () => {
+  const cities = effectiveCities(DEFAULTS, null, { label: 'Home', lat: 999, lon: 0, tz: 'UTC' });
+  assert.equal(cities.find((city) => city.home).name, 'Leeds');
+});
+
+test('a browser position maps to a detected home', () => {
+  const home = detectedHomeFromPosition(
+    { coords: { latitude: 41.87811234, longitude: -87.62981234 } },
+    'America/Chicago',
+  );
+  assert.deepEqual(home, { label: 'Home', lat: 41.8781, lon: -87.6298, tz: 'America/Chicago' });
+});
+
+test('a bad position or timezone yields no detected home', () => {
+  assert.equal(detectedHomeFromPosition(null, 'UTC'), null);
+  assert.equal(detectedHomeFromPosition({ coords: { latitude: NaN, longitude: 0 } }, 'UTC'), null);
+  assert.equal(detectedHomeFromPosition({ coords: { latitude: 1, longitude: 2 } }, 'Mars/Base'), null);
 });
 
 test('map mode defaults to home-centered', () => {

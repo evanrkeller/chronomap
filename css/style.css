@@ -261,9 +261,65 @@ body {
 }
 
 .location-row {
-  grid-template-columns: 1.2fr 1fr 1fr 1.4fr auto;
+  grid-template-columns: 1.2fr 1fr 1fr 1.4fr auto auto;
   align-items: end;
   margin-bottom: 10px;
+}
+
+.location-find {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(154, 167, 181, 0.35);
+  border-radius: 6px;
+  background: transparent;
+  color: #9aa7b5;
+  font-size: 0.75rem;
+  font-family: inherit;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.location-find:hover,
+.location-find:focus-visible {
+  color: #ffd500;
+  border-color: #ffd500;
+}
+
+.location-find:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.lookup-results {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  color: #9aa7b5;
+}
+
+.lookup-results:empty {
+  margin: 0;
+}
+
+.lookup-candidate {
+  text-align: left;
+  padding: 7px 10px;
+  border: 1px solid rgba(154, 167, 181, 0.35);
+  border-radius: 6px;
+  background: #060a12;
+  color: #d5dce4;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.lookup-candidate:hover,
+.lookup-candidate:focus-visible {
+  border-color: #ffd500;
+  color: #ffffff;
 }
 
 .location-clear {
