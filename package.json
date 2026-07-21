@@ -1,0 +1,10 @@
+{
+  "name": "chronomap",
+  "version": "0.1.0",
+  "description": "Full-screen real-time day/night world map for a wall TV",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}
