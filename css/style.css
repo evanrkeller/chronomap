@@ -14,8 +14,16 @@ body {
 body {
   display: flex;
   flex-direction: column;
-  /* Kiosk display: never show a pointer over the map. */
-  cursor: none;
+}
+
+/* Kiosk cleanliness without stranding interactive users: js/cursor.js
+   adds this class after a few idle seconds and removes it on movement,
+   so a moving mouse is always visible and a still one disappears.
+   !important so the chrome's own cursor rules (pointer on buttons,
+   auto in the dialog) can't keep an idle cursor visible. */
+body.cursor-idle,
+body.cursor-idle * {
+  cursor: none !important;
 }
 
 /* The scoreboard keeps a clamped height on every screen shape; the 2:1
