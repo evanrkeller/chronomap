@@ -6,7 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Settings panel behind a corner gear icon: set a home location (label,
+  latitude, longitude, IANA timezone) that recenters the map, replaces
+  the default home on the scoreboard with a yellow label, and persists
+  in localStorage — corrupt or invalid stored settings fall back to the
+  built-in defaults (#26)
+
 ### Changed
+
+- Map centering moved from asset time to render time: the projection
+  takes a center meridian and the pre-rolled imagery is drawn with a
+  wrapped offset, so any longitude can sit mid-screen (#26)
 
 - Display is resolution-aware: 4096×2048 assets, canvas sized to the
   screen's native pixels (retina/4K crisp, lighter than before on the

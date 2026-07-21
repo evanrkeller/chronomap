@@ -11,10 +11,48 @@
   <main id="map-area">
     <div id="map-stack">
       <canvas id="map" width="2048" height="1024"
-              aria-label="World map centered on Leeds, Alabama showing current day and night regions"></canvas>
+              aria-label="World map showing current day and night regions"></canvas>
       <canvas id="markers" width="2048" height="1024" aria-hidden="true"></canvas>
     </div>
   </main>
+
+  <button id="settings-button" aria-label="Settings" title="Settings">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
+         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3.2"/>
+      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.08a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.08a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1.03z"/>
+    </svg>
+  </button>
+
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <form id="settings-form" novalidate>
+      <h2 id="settings-title">Settings</h2>
+      <section class="settings-section">
+        <h3>Home location</h3>
+        <div class="settings-fields">
+          <label>Label
+            <input name="home-label" type="text" placeholder="Home" autocomplete="off">
+          </label>
+          <label>Latitude
+            <input name="home-lat" type="text" inputmode="decimal" placeholder="33.5465" autocomplete="off">
+          </label>
+          <label>Longitude
+            <input name="home-lon" type="text" inputmode="decimal" placeholder="-86.5497" autocomplete="off">
+          </label>
+          <label>Time zone
+            <input name="home-tz" type="text" list="tz-options" placeholder="America/Chicago" autocomplete="off">
+          </label>
+        </div>
+      </section>
+      <p id="settings-error" role="alert" hidden></p>
+      <div class="settings-actions">
+        <button type="button" id="settings-cancel">Cancel</button>
+        <button type="submit" id="settings-save">Save</button>
+      </div>
+    </form>
+    <datalist id="tz-options"></datalist>
+  </dialog>
+
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
