@@ -26,13 +26,20 @@ export function formatCityTime(date, timeZone) {
   };
 }
 
+const dateKeyFormatterCache = new Map();
+
 // A key that changes when the local calendar date changes, for spotting
 // cities living in tomorrow (or yesterday) relative to home.
 export function localDateKey(date, timeZone) {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(date);
+  let formatter = dateKeyFormatterCache.get(timeZone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    dateKeyFormatterCache.set(timeZone, formatter);
+  }
+  return formatter.format(date);
 }

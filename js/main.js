@@ -136,4 +136,9 @@ async function start() {
   buildScoreboard(cities);
 }
 
-start();
+start().catch((error) => {
+  // A transient failure (network blip during the 3 AM reload) must never
+  // strand a black screen on the TV — try again shortly.
+  console.error('chronomap start failed, retrying in 60s', error);
+  setTimeout(() => window.location.reload(), 60000);
+});
