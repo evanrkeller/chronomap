@@ -1,6 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { nightAlpha, SIN_NIGHT_LIMIT } from '../js/terminator.js';
+import { nightAlpha, dayPart, SIN_NIGHT_LIMIT } from '../js/terminator.js';
+
+test('dayPart buckets match the map thresholds', () => {
+  assert.equal(dayPart(0.4), 'day');
+  assert.equal(dayPart(0), 'day');
+  assert.equal(dayPart(SIN_NIGHT_LIMIT / 2), 'twilight');
+  assert.equal(dayPart(SIN_NIGHT_LIMIT - 0.01), 'night');
+});
 
 test('daylight is fully transparent', () => {
   assert.equal(nightAlpha(0.5), 0);

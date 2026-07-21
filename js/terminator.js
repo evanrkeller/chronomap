@@ -3,6 +3,14 @@
 // which reads naturally against the city-lights imagery.
 export const SIN_NIGHT_LIMIT = Math.sin((-9 * Math.PI) / 180);
 
+// Day-part bucket for the scoreboard indicator, using the same
+// thresholds as the map's twilight band.
+export function dayPart(sinAlt) {
+  if (sinAlt >= 0) return 'day';
+  if (sinAlt > SIN_NIGHT_LIMIT) return 'twilight';
+  return 'night';
+}
+
 // Opacity of the night layer at a point: 0 in daylight, 1 in full night,
 // smoothstep-blended through the twilight band.
 export function nightAlpha(sinAlt) {

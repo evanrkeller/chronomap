@@ -1,6 +1,6 @@
 import { xToLon, yToLat, mapOrder } from './geo.js';
 import { subsolarPoint, sinAltitude } from './solar.js';
-import { nightAlpha } from './terminator.js';
+import { nightAlpha, dayPart } from './terminator.js';
 import { drawMarkers } from './markers.js';
 import { formatCityTime, localDateKey } from './clock.js';
 import { scheduleDailyReload } from './kiosk.js';
@@ -79,6 +79,8 @@ function scheduleUpdates(dayImage, nightImage) {
   setTimeout(() => scheduleUpdates(dayImage, nightImage), delay);
 }
 
+const DAY_PART_GLYPHS = { day: '☀', twilight: '◐', night: '☽' };
+
 function buildScoreboard(cities) {
   const scoreboard = document.getElementById('scoreboard');
   const home = cities.find((city) => city.home) ?? cities[0];
@@ -102,20 +104,32 @@ function buildScoreboard(cities) {
 
     const weekday = document.createElement('div');
     weekday.className = 'city-weekday';
+    const daypart = document.createElement('span');
+    daypart.className = 'city-daypart';
+    const weekdayText = document.createElement('span');
+    weekday.append(daypart, weekdayText);
 
     tile.append(name, time, weekday);
     scoreboard.append(tile);
-    return { city, tile, time, weekday };
+    return { city, tile, time, daypart, weekdayText };
   });
 
   function updateClocks() {
     const now = new Date();
     const homeDate = localDateKey(now, home.tz);
-    for (const { city, tile, time, weekday } of tiles) {
+    const subsolar = subsolarPoint(now);
+    for (const { city, tile, time, daypart, weekdayText } of tiles) {
       const formatted = formatCityTime(now, city.tz);
       time.textContent = formatted.time;
-      weekday.textContent = formatted.weekday;
+      weekdayText.textContent = formatted.weekday;
       tile.classList.toggle('other-day', localDateKey(now, city.tz) !== homeDate);
+
+      if (typeof city.lat === 'number' && typeof city.lon === 'number') {
+        const part = dayPart(sinAltitude(city.lat, city.lon, subsolar));
+        daypart.textContent = DAY_PART_GLYPHS[part];
+        daypart.className = `city-daypart daypart-${part}`;
+        daypart.title = part;
+      }
     }
     // Re-align to just past the next minute boundary.
     setTimeout(updateClocks, 60000 - (Date.now() % 60000) + 250);

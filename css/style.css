@@ -84,6 +84,23 @@ body {
   color: #ffb347;
 }
 
+/* Day-part indicator: sun, half-disc twilight, or moon per city,
+   driven by the actual solar altitude. */
+.city-daypart {
+  margin-right: 0.5em;
+}
+
+.daypart-day {
+  color: #ffd75e;
+}
+
+.daypart-twilight {
+  color: #ff9d5c;
+}
+
+.daypart-night {
+  color: #8fa7ff;
+}
 
 .city-tile.home .city-name {
   color: #ffb347;

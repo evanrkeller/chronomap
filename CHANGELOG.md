@@ -18,6 +18,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Day-part indicator on each city card — sun, twilight half-disc, or
+  moon, driven by the actual solar altitude at that city (#20)
+
 - Kiosk hardening: daily self-reload at 3:00 AM local, hidden cursor,
   redraw breadcrumbs in the console, and Raspberry Pi 3 kiosk setup
   documentation (#11)
