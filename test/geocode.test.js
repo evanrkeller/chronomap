@@ -79,6 +79,22 @@ test('lookupPlace passes an abort signal for the timeout guard', async () => {
   assert.ok(options.signal instanceof AbortSignal);
 });
 
+test('the timeout guard still works without AbortSignal.timeout', async () => {
+  const native = AbortSignal.timeout;
+  delete AbortSignal.timeout;
+  try {
+    let options = null;
+    const fakeFetch = async (url, opts) => {
+      options = opts;
+      return { ok: true, json: async () => ({ results: [] }) };
+    };
+    await lookupPlace('Leeds', fakeFetch);
+    assert.ok(options.signal instanceof AbortSignal, 'fallback signal provided');
+  } finally {
+    AbortSignal.timeout = native;
+  }
+});
+
 test('an empty or missing results list parses to no candidates', () => {
   assert.deepEqual(parseGeocodeResults({}), []);
   assert.deepEqual(parseGeocodeResults({ results: [] }), []);
