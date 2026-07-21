@@ -5,9 +5,32 @@ Geochron clock and HamClock's gray-line view, without the ham-radio extras.
 Static HTML/CSS/JS with zero runtime dependencies, built to run in Chromium
 kiosk mode on a Raspberry Pi 3 at 1920×1080.
 
-The map is centered on the meridian of Leeds, Alabama (86.55° W).
+**Live site:** https://keller-solutions.github.io/chronomap/
 
-**Live site:** https://evanrkeller.github.io/chronomap/
+## Features
+
+- Real-time day/night terminator with a twilight band, civil-twilight
+  contour, sun and moon icons at their overhead points (the moon drawn
+  with its current phase), refreshed every minute.
+- A scoreboard of live local clocks. A fresh visitor sees just two
+  tiles — **home and UTC**. Home is the visitor's detected location
+  (browser geolocation, used in memory only and never stored or sent
+  anywhere); if the location prompt is declined, home falls back to
+  Birmingham, AL.
+- A gear menu (bottom-right) for settings, persisted in localStorage
+  with no server side:
+  - **Home location** — label, latitude, longitude, IANA timezone. A
+    saved home overrides detection and gets the yellow scoreboard label.
+  - **Up to 4 additional locations**, for at most six tiles (home, UTC,
+    and the additions), each with a matching map marker.
+  - **Find buttons** that look up a place name via the free, keyless
+    Open-Meteo geocoder and fill in coordinates and timezone — the only
+    network call the app ever makes, and only when you click Find.
+  - **Map centering** — home-centered (default) keeps home mid-screen;
+    sun-centered keeps the subsolar point mid-screen so the map rolls
+    beneath a fixed day-night outline through the day.
+- Keller Solutions attribution badge, bottom-left, with a
+  self-updating copyright year.
 
 ## Imagery credits
 
@@ -33,8 +56,11 @@ scripts/fetch-assets.sh
 ```
 
 The script downloads the NASA source mosaics into `assets/raw/` (gitignored),
-recenters them on the Leeds meridian, and rewrites `assets/earth-day.jpg`
-and `assets/earth-night.jpg`.
+recenters them on the meridian of Leeds, Alabama (86.55° W), and rewrites
+`assets/earth-day.jpg` and `assets/earth-night.jpg`. The pre-roll is only a
+storage detail: at render time the display rolls the imagery to whatever
+center the active mode calls for (the home longitude, or the subsolar
+longitude in sun-centered mode).
 
 ## Raspberry Pi kiosk setup
 
@@ -53,7 +79,7 @@ time, so the kiosk picks up deployed changes without intervention.
    [Desktop Entry]
    Type=Application
    Name=ChronoMap
-   Exec=chromium-browser --kiosk --noerrdialogs --disable-session-crashed-bubble --disable-infobars https://evanrkeller.github.io/chronomap/
+   Exec=chromium-browser --kiosk --noerrdialogs --disable-session-crashed-bubble --disable-infobars https://keller-solutions.github.io/chronomap/
    ```
 
    (On older Raspberry Pi OS the binary may be `chromium` instead of

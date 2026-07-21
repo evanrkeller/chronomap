@@ -36,6 +36,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- ChronoMap moved to the keller-solutions GitHub org; the live site is
+  now https://keller-solutions.github.io/chronomap/ (the old
+  evanrkeller.github.io URL no longer serves — kiosks pointed at it
+  need their autostart URL updated) (#40)
 - A brand-new visitor now sees only two scoreboard tiles — home and
   UTC. Home is their detected location, or Birmingham, AL when
   detection is denied or unavailable; the old pre-populated city set
