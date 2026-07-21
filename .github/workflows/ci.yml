@@ -11,7 +11,9 @@ concurrency:
 
 jobs:
   changelog:
-    uses: keller-solutions/.github/.github/workflows/changelog-version-check.yml@main
+    # TODO(#45): flip back to @main once keller-solutions/.github#6
+    # (unversioned-main tolerance) merges.
+    uses: keller-solutions/.github/.github/workflows/changelog-version-check.yml@fix/changelog-check-unversioned-main
 
   # The org has no Node reusable workflow (ruby/rails only), so the
   # test job lives inline in the same pinned-SHA style.
