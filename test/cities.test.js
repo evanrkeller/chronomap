@@ -6,10 +6,15 @@ const cities = JSON.parse(
   readFileSync(new URL('../config/cities.json', import.meta.url), 'utf8'),
 );
 
-test('exactly one home city exists and it is Leeds', () => {
+test('exactly one home city exists and it is the Birmingham, AL fallback', () => {
   const homes = cities.filter((city) => city.home);
   assert.equal(homes.length, 1);
-  assert.equal(homes[0].name, 'Leeds');
+  assert.equal(homes[0].name, 'Birmingham');
+  assert.equal(homes[0].tz, 'America/Chicago');
+});
+
+test('the defaults are only home and UTC — no pre-populated cities', () => {
+  assert.equal(cities.length, 2);
 });
 
 test('a UTC card is configured, scoreboard-only (no coordinates)', () => {
