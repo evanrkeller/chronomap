@@ -7,6 +7,8 @@ kiosk mode on a Raspberry Pi 3 at 1920×1080.
 
 The map is centered on the meridian of Leeds, Alabama (86.55° W).
 
+**Live site:** https://evanrkeller.github.io/chronomap/
+
 ## Imagery credits
 
 Map imagery is public domain, courtesy of NASA:

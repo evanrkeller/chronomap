@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Zero-cost hosting on GitHub Pages, serving the repo root from `main`
+  with no build step; total page weight ~650 KB (#10)
 - Scoreboard bar across the top showing live local time and weekday for
   each configured city, with cities on a different calendar day than
   Leeds highlighted (#9)
