@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   screen's native pixels (retina/4K crisp, lighter than before on the
   Pi), sun and moon at 15 px, and a responsive layout that keeps the
   scoreboard visible at any window shape (#25)
+- Fill-first layout: the map always spans the full width — 16:9 shows
+  it uncropped, shorter windows crop up to 10% off the top and bottom,
+  and beyond that the map stretches vertically to fit (#25)
 
 - Initial city set is now Brisbane, Leeds (home), Cincinnati, Istanbul,
   and New Delhi, plus a UTC card; scoreboard cards order themselves

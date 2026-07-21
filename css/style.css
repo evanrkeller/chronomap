@@ -36,19 +36,26 @@ body {
   justify-content: center;
 }
 
+/* Fill-first: the map always spans the full width. A full-screen 16:9
+   display fits the 2:1 map exactly (uncropped). Shorter windows crop
+   the top and bottom symmetrically up to 10% of the map's height; past
+   that, the map squashes vertically to fit. Taller windows letterbox. */
 #map-stack {
   position: relative;
-  aspect-ratio: 2 / 1;
-  width: min(100vw, calc((100vh - var(--scoreboard-height)) * 2));
+  overflow: hidden;
+  width: 100vw;
+  height: min(50vw, calc(100vh - var(--scoreboard-height)));
 }
 
 #map,
 #markers {
   position: absolute;
-  inset: 0;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
   display: block;
   width: 100%;
-  height: 100%;
+  height: min(50vw, calc((100vh - var(--scoreboard-height)) / 0.9));
 }
 
 #scoreboard {
