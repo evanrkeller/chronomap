@@ -1,6 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { nightAlpha, dayPart, SIN_NIGHT_LIMIT } from '../js/terminator.js';
+import { nightAlpha, dayPart, civilTwilightCircle, SIN_NIGHT_LIMIT } from '../js/terminator.js';
+import { subsolarPoint, sinAltitude } from '../js/solar.js';
+
+test('every point on the civil twilight circle has the sun 6 degrees below the horizon', () => {
+  const target = Math.sin((-6 * Math.PI) / 180);
+  for (const instant of [Date.UTC(2026, 6, 21, 3, 20), Date.UTC(2026, 11, 21, 12, 0)]) {
+    const subsolar = subsolarPoint(new Date(instant));
+    const points = civilTwilightCircle(subsolar, 360);
+    assert.equal(points.length, 360);
+    for (const point of points) {
+      const sinAlt = sinAltitude(point.latitude, point.longitude, subsolar);
+      assert.ok(Math.abs(sinAlt - target) < 1e-9, `off-circle point at ${JSON.stringify(point)}`);
+    }
+  }
+});
 
 test('dayPart buckets match the map thresholds', () => {
   assert.equal(dayPart(0.4), 'day');

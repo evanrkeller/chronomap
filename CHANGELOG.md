@@ -18,6 +18,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Subtle grey-blue contour on the night side marking the end of civil
+  twilight (sun 6° below the horizon) (#21)
+
 - Day-part indicator on each city card — sun, twilight half-disc, or
   moon, driven by the actual solar altitude at that city (#20)
 

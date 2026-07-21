@@ -1,6 +1,6 @@
-import { xToLon, yToLat, mapOrder } from './geo.js';
+import { xToLon, yToLat, lonToX, latToY, mapOrder } from './geo.js';
 import { subsolarPoint, sinAltitude } from './solar.js';
-import { nightAlpha, dayPart } from './terminator.js';
+import { nightAlpha, dayPart, civilTwilightCircle } from './terminator.js';
 import { drawMarkers } from './markers.js';
 import { formatCityTime, localDateKey } from './clock.js';
 import { scheduleDailyReload } from './kiosk.js';
@@ -54,6 +54,31 @@ function renderMask(subsolar) {
   maskContext.putImageData(maskPixels, 0, 0);
 }
 
+// Medium grey-blue: visible over the night imagery, not distracting.
+const TWILIGHT_LINE_STYLE = 'rgba(125, 143, 174, 0.55)';
+
+function drawTwilightLine(subsolar) {
+  const width = mapCanvas.width;
+  const height = mapCanvas.height;
+  const points = civilTwilightCircle(subsolar);
+
+  mapContext.beginPath();
+  let previousX = null;
+  for (const point of points) {
+    const x = lonToX(point.longitude, width);
+    const y = latToY(point.latitude, height);
+    if (previousX === null || Math.abs(x - previousX) > width / 2) {
+      mapContext.moveTo(x, y); // new segment at the map-edge wrap
+    } else {
+      mapContext.lineTo(x, y);
+    }
+    previousX = x;
+  }
+  mapContext.strokeStyle = TWILIGHT_LINE_STYLE;
+  mapContext.lineWidth = 2.5;
+  mapContext.stroke();
+}
+
 function render(dayImage, nightImage) {
   const now = new Date();
   // Breadcrumb for remote debugging on the kiosk (chrome://inspect).
@@ -70,6 +95,7 @@ function render(dayImage, nightImage) {
 
   mapContext.drawImage(dayImage, 0, 0, mapCanvas.width, mapCanvas.height);
   mapContext.drawImage(nightCanvas, 0, 0);
+  drawTwilightLine(subsolar);
 }
 
 function scheduleUpdates(dayImage, nightImage) {
