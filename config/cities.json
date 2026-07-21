@@ -1,0 +1,8 @@
+[
+  { "name": "Leeds", "lat": 33.5465, "lon": -86.5497, "tz": "America/Chicago" },
+  { "name": "Los Angeles", "lat": 34.0522, "lon": -118.2437, "tz": "America/Los_Angeles" },
+  { "name": "New York", "lat": 40.7128, "lon": -74.006, "tz": "America/New_York" },
+  { "name": "London", "lat": 51.5072, "lon": -0.1276, "tz": "Europe/London" },
+  { "name": "Tokyo", "lat": 35.6762, "lon": 139.6503, "tz": "Asia/Tokyo" },
+  { "name": "Sydney", "lat": -33.8688, "lon": 151.2093, "tz": "Australia/Sydney" }
+]

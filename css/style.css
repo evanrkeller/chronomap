@@ -24,10 +24,14 @@ body {
 }
 
 #map-area {
+  position: relative;
   height: 50vw;
 }
 
-#map {
+#map,
+#markers {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100vw;
   height: 50vw;

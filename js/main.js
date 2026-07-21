@@ -1,6 +1,7 @@
 import { xToLon, yToLat } from './geo.js';
 import { subsolarPoint, sinAltitude } from './solar.js';
 import { nightAlpha } from './terminator.js';
+import { drawMarkers } from './markers.js';
 
 const UPDATE_INTERVAL_MS = 60000;
 
@@ -74,13 +75,19 @@ function scheduleUpdates(dayImage, nightImage) {
 }
 
 async function start() {
-  const [dayImage, nightImage] = await Promise.all([
+  const [dayImage, nightImage, citiesResponse] = await Promise.all([
     loadImage('assets/earth-day.jpg'),
     loadImage('assets/earth-night.jpg'),
+    fetch('config/cities.json'),
   ]);
+  const cities = await citiesResponse.json();
+
   nightCanvas.width = mapCanvas.width;
   nightCanvas.height = mapCanvas.height;
   scheduleUpdates(dayImage, nightImage);
+
+  const markersCanvas = document.getElementById('markers');
+  drawMarkers(markersCanvas.getContext('2d'), cities, markersCanvas.width, markersCanvas.height);
 }
 
 start();
