@@ -29,11 +29,18 @@ function isBlank(location) {
     && Number.isNaN(location.lon) && location.tz === '';
 }
 
+// Hand-edited storage can hold anything; blank whatever isn't a clean
+// string or finite number so garbage never shows as "NaN" or gets
+// accidentally re-saved.
 function fillLocation(form, prefix, location) {
-  form.elements[`${prefix}-label`].value = location?.label ?? '';
-  form.elements[`${prefix}-lat`].value = location?.lat ?? '';
-  form.elements[`${prefix}-lon`].value = location?.lon ?? '';
-  form.elements[`${prefix}-tz`].value = location?.tz ?? '';
+  const text = (value) => (typeof value === 'string' ? value : '');
+  const number = (value) => (
+    typeof value === 'number' && Number.isFinite(value) ? value : ''
+  );
+  form.elements[`${prefix}-label`].value = text(location?.label);
+  form.elements[`${prefix}-lat`].value = number(location?.lat);
+  form.elements[`${prefix}-lon`].value = number(location?.lon);
+  form.elements[`${prefix}-tz`].value = text(location?.tz);
 }
 
 function fillForm(form, settings) {
