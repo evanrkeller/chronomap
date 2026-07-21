@@ -29,8 +29,9 @@ export function parseGeocodeResults(json) {
   for (const result of results) {
     if (typeof result?.latitude !== 'number' || typeof result?.longitude !== 'number') continue;
     if (typeof result.timezone !== 'string' || result.timezone === '') continue;
+    if (typeof result.name !== 'string' || result.name === '') continue;
     candidates.push({
-      label: result.name ?? '',
+      label: result.name,
       description: [result.admin1, result.country].filter(Boolean).join(', '),
       lat: round(result.latitude),
       lon: round(result.longitude),
@@ -40,8 +41,16 @@ export function parseGeocodeResults(json) {
   return candidates;
 }
 
+// A stalled connection must fail into the dialog's retry message, not
+// pin the row on "Searching…" forever — older kiosk Chromium without
+// AbortSignal.timeout just goes without the guard.
+const LOOKUP_TIMEOUT_MS = 10000;
+
 export async function lookupPlace(query, fetchFn = fetch) {
-  const response = await fetchFn(geocodeUrl(query));
+  const signal = typeof AbortSignal.timeout === 'function'
+    ? AbortSignal.timeout(LOOKUP_TIMEOUT_MS)
+    : undefined;
+  const response = await fetchFn(geocodeUrl(query), { signal });
   if (!response.ok) throw new Error(`geocoding failed: ${response.status}`);
   return parseGeocodeResults(await response.json());
 }

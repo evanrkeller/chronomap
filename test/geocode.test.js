@@ -58,6 +58,27 @@ test('entries missing coordinates or timezone are skipped', () => {
   assert.equal(candidates[0].label, 'Good');
 });
 
+test('entries without a usable name are skipped', () => {
+  const candidates = parseGeocodeResults({
+    results: [
+      { latitude: 1, longitude: 2, timezone: 'UTC', country: 'X' },
+      { name: '', latitude: 1, longitude: 2, timezone: 'UTC' },
+      { name: 'Kept', latitude: 1, longitude: 2, timezone: 'UTC' },
+    ],
+  });
+  assert.deepEqual(candidates.map((c) => c.label), ['Kept']);
+});
+
+test('lookupPlace passes an abort signal for the timeout guard', async () => {
+  let options = null;
+  const fakeFetch = async (url, opts) => {
+    options = opts;
+    return { ok: true, json: async () => ({ results: [] }) };
+  };
+  await lookupPlace('Leeds', fakeFetch);
+  assert.ok(options.signal instanceof AbortSignal);
+});
+
 test('an empty or missing results list parses to no candidates', () => {
   assert.deepEqual(parseGeocodeResults({}), []);
   assert.deepEqual(parseGeocodeResults({ results: [] }), []);

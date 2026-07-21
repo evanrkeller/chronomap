@@ -52,6 +52,11 @@ function fillForm(form, settings) {
   form.elements['map-mode'].value = mapMode(settings);
 }
 
+// Bumped whenever the results areas are wiped (dialog open/close), so
+// a lookup that resolves after the user abandoned it can't inject
+// stale candidates into a freshly reset form.
+let lookupEpoch = 0;
+
 // A Find button searches the row's Label text and offers the matches;
 // picking one fills the row. Requests happen only here, on demand —
 // the display itself never talks to the geocoder.
@@ -67,10 +72,12 @@ function initLookup(form) {
         form.elements[`${prefix}-label`].focus();
         return;
       }
+      const epoch = lookupEpoch;
       find.disabled = true;
       results.textContent = 'Searching…';
       try {
         const candidates = await lookupPlace(query);
+        if (epoch !== lookupEpoch) return;
         results.replaceChildren();
         if (candidates.length === 0) {
           results.textContent = 'No places found.';
@@ -86,10 +93,14 @@ function initLookup(form) {
           pick.addEventListener('click', () => {
             fillLocation(form, prefix, candidate);
             results.replaceChildren();
+            // The picked button just vanished — hand focus back to the
+            // row's Find button so keyboard flow stays in place.
+            find.focus();
           });
           results.append(pick);
         }
       } catch {
+        if (epoch !== lookupEpoch) return;
         results.textContent = 'Lookup failed — try again, or enter coordinates manually.';
       } finally {
         find.disabled = false;
@@ -99,6 +110,7 @@ function initLookup(form) {
 }
 
 function clearLookupResults(form) {
+  lookupEpoch += 1;
   for (const results of form.querySelectorAll('.lookup-results')) {
     results.replaceChildren();
   }
@@ -118,6 +130,9 @@ export function initSettingsUi({ storage, onChange }) {
     error.hidden = true;
     dialog.showModal();
   });
+
+  // Esc (native cancel) also abandons any in-flight lookups.
+  dialog.addEventListener('close', () => clearLookupResults(form));
 
   initLookup(form);
 
